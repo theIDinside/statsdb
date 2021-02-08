@@ -92,7 +92,7 @@ Database::DBHandle Database::create(const fs::path &assets_directory) {
         std::abort();
     }
 }
-Database::Database(Map<Team> &&team, Map<GameInfo> &&schedule, Map<Game> &&games_played) noexcept : teams(std::move(team)), schedule(std::move(schedule)), played_games(std::move(games_played)), calendar{}, games_by_team{} {
+Database::Database(IDMap<Team> &&team, IDMap<GameInfo> &&schedule, IDMap<Game> &&games_played) noexcept : teams(std::move(team)), schedule(std::move(schedule)), played_games(std::move(games_played)), calendar{}, games_by_team{} {
     init();
 }
 void Database::init() {
@@ -110,7 +110,7 @@ void Database::init() {
     }
 
 
-    // Not a code smell. We are creating a map of references to data we own. Must therefore be done here.
+    // Not a code smell. We are creating a map of references to dat<a we own. Must therefore be done here.
     for (const auto &[game_id, game_result] : played_games) {
         const auto &home_team = game_result.game_info.home;
         const auto &away_team = game_result.game_info.away;

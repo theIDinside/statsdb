@@ -8,16 +8,6 @@ set(STATSDB_LIB_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 include(FetchContent)
 option(JSON_BuildTests OFF) # We don't want to build the damn tests. It takes 5 times as long as building my project.
 # For deserializing json data
-FetchContent_Declare(
-        fmt
-        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG master
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/deps/fmt
-)
-if (NOT fmt_POPULATED)
-    FetchContent_Populate(fmt)
-    add_subdirectory(${fmt_SOURCE_DIR} ${fmt_BINARY_DIR})
-endif ()
 
 FetchContent_Declare(
         json
@@ -30,7 +20,16 @@ if (NOT json_POPULATED)
     add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR})
 endif()
 
-FetchContent_MakeAvailable(json fmt)
+FetchContent_Declare(
+        fmt
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_TAG master
+        SOURCE_DIR ${PROJECT_SOURCE_DIR}/deps/fmt
+)
+if (NOT fmt_POPULATED)
+   FetchContent_Populate(fmt)
+   add_subdirectory(${fmt_SOURCE_DIR} ${fmt_BINARY_DIR})
+endif ()
 
 add_library(statsdb
         src/game_data.cpp
@@ -47,7 +46,6 @@ add_library(statsdb
         )
 
 target_link_libraries(statsdb nlohmann_json::nlohmann_json fmt)
-add_dependencies(statsdb nlohmann_json fmt)
 target_include_directories(
         statsdb
         INTERFACE

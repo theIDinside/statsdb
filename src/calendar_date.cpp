@@ -30,3 +30,6 @@ std::ostream& operator<<(std::ostream& os, const CalendarDate& c) {
 bool operator==(const CalendarDate& lhs, const CalendarDate& rhs) {
     return (lhs.year == rhs.year && lhs.month == rhs.month && lhs.day == rhs.day);
 }
+std::string CalendarDate::to_string() {
+    return fmt::format("{}-{:0>2}-{:0>2}", year, month, day);
+}

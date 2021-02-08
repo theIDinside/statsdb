@@ -221,6 +221,17 @@ void test_toronto_team_standings_of_8th_of_feb(Database &db) {
     assert(acc.pk == 75.6f);
 }
 
+void test_get_games_feb08(Database& db) {
+    auto date = CalendarDate{.year = 2021, .month = 2, .day = 8};
+    println("Getting games for {}", date.to_string());
+    auto _games = db.get_games_at(date);
+    auto games = _games.value();
+    println("Games {}: {}", date.to_string(), games.size());
+    for(auto& g : games) {
+        println("{}", g.to_string());
+    }
+    assert(games.size() == 6);
+}
 
 int main(int argc, const char **argv) {
     std::cout << "assets root dir set at: "
@@ -230,4 +241,5 @@ int main(int argc, const char **argv) {
     test_get_toronto_wins(*db);
     test_toronto_goals(*db);
     test_toronto_team_standings_of_8th_of_feb(*db);
+    test_get_games_feb08(*db);
 }

@@ -12,4 +12,5 @@ struct CalendarDate
     friend bool operator<(const CalendarDate& lhs, const CalendarDate& rhs);
     friend bool operator>(const CalendarDate& lhs, const CalendarDate& rhs);
     friend bool operator==(const CalendarDate& lhs, const CalendarDate& rhs);
+    std::string to_string();
 };
