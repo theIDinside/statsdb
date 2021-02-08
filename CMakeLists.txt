@@ -47,7 +47,7 @@ add_library(statsdb
         )
 
 target_link_libraries(statsdb nlohmann_json::nlohmann_json fmt)
-
+add_dependencies(statsdb nlohmann_json fmt)
 target_include_directories(
         statsdb
         INTERFACE
