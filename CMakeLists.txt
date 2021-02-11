@@ -7,23 +7,29 @@ set(STATSDB_LIB_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 
 include(FetchContent)
 option(JSON_BuildTests OFF) # We don't want to build the damn tests. It takes 5 times as long as building my project.
+set(JSON_BuildTests OFF CACHE INTERNAL "")
 # For deserializing json data
 
+# So we can see progress of FetchContent
+Set(FETCHCONTENT_QUIET FALSE)
 FetchContent_Declare(
         json
         GIT_REPOSITORY https://github.com/nlohmann/json.git
         GIT_TAG master
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/deps/json)
+        GIT_PROGRESS TRUE
+        SOURCE_DIR ${PROJECT_SOURCE_DIR}/deps/json
+)
 
 if (NOT json_POPULATED)
     FetchContent_Populate(json)
-    add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR})
+    add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
 FetchContent_Declare(
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
         GIT_TAG master
+        GIT_PROGRESS TRUE
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/deps/fmt
 )
 if (NOT fmt_POPULATED)
@@ -45,7 +51,7 @@ add_library(statsdb
         include/statsdb/db.hpp
         )
 
-target_link_libraries(statsdb nlohmann_json::nlohmann_json fmt)
+target_link_libraries(statsdb PRIVATE nlohmann_json::nlohmann_json fmt)
 target_include_directories(
         statsdb
         INTERFACE
