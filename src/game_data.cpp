@@ -29,3 +29,11 @@ bool operator>(const Team& lhs, const Team& rhs) {
     return lhs.id > rhs.id;
 }
 
+float SpecialTeams::get_efficiency(SpecialTeams::Type type) const {
+    switch(type) {
+        case Type::PowerPlay:
+            return float(goals) / float(attempts);
+        case Type::PenaltyKilling:
+            return 1.0f - float(goals) / float(attempts);
+    }
+}

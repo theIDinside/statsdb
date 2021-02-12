@@ -82,7 +82,7 @@ struct SpecialTeams {
     };
     int goals;
     int attempts;
-    double get_efficiency(Type type) const;
+    float get_efficiency(Type type) const;
 };
 
 using IntResult = TeamsValueHolder<int>;

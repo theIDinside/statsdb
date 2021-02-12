@@ -171,7 +171,6 @@ std::optional<Game> Database::get_game(int game_id) {
 std::optional<std::vector<Game>> Database::get_games_played_by(const std::string &teamName) {
     auto search_term = teamName;
     std::ranges::transform(search_term, search_term.begin(), [](auto ch) { return std::toupper(ch); });
-    println("Searching for team {}", search_term);
     auto team_search = std::find_if(teams.cbegin(), teams.cend(), [&](const auto &iter) {
         const auto &team = iter.second;
         if (team == search_term) {
@@ -187,6 +186,9 @@ std::optional<std::vector<Game>> Database::get_games_played_by(const std::string
         auto games_refs = games_by_team[team_name];
         std::ranges::transform(games_refs, std::back_inserter(games), [](auto el) {
             return *el;
+        });
+        std::ranges::sort(games, [](const Game& a, const Game& b) {
+            return a.game_info.date < b.game_info.date;
         });
         return games;
     } else {
