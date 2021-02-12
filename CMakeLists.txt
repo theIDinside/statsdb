@@ -4,6 +4,7 @@ project(statsdb LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/statsdb_bin)
 set(STATSDB_LIB_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
 option(JSON_BuildTests OFF) # We don't want to build the damn tests. It takes 5 times as long as building my project.
@@ -43,15 +44,18 @@ add_library(statsdb
         src/deserialize.cpp
         src/deserialize.hpp
         src/db.cpp
+        src/stats.cpp
 
         include/statsdb/statsdb.h
         include/statsdb/defs.hpp
         include/statsdb/game_data.hpp
         include/statsdb/calendar_date.hpp
         include/statsdb/db.hpp
+        include/statsdb/stats.hpp
+        include/statsdb/utils.hpp
         )
 
-target_link_libraries(statsdb PRIVATE nlohmann_json::nlohmann_json fmt)
+target_link_libraries(statsdb nlohmann_json::nlohmann_json fmt)
 target_include_directories(
         statsdb
         INTERFACE
