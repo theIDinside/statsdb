@@ -29,7 +29,7 @@
     exit(-1);
 #endif
 
-span_avg::RollingStandard span_avg::goals_for(std::string_view team, const std::vector<Game> &games, int span) {
+RollingStandard span_avg::goals_for(std::string_view team, const std::vector<Game> &games, int span) {
     assert(games.size() >= span);
     std::vector<int> goals;
     goals.reserve(games.size());
@@ -48,7 +48,8 @@ span_avg::RollingStandard span_avg::goals_for(std::string_view team, const std::
     };
     return utils::window_average<DecimalNumber<2>>(goals, static_cast<std::size_t>(span), +fn);
 }
-span_avg::RollingStandard span_avg::goals_against(std::string_view team, const std::vector<Game> &games, int span) {
+
+RollingStandard span_avg::goals_against(std::string_view team, const std::vector<Game> &games, int span) {
     assert(games.size() >= span);
     std::vector<int> goals;
     goals.reserve(games.size());
@@ -66,7 +67,8 @@ span_avg::RollingStandard span_avg::goals_against(std::string_view team, const s
         return acc + float(goalsPerGame);
     });
 }
-span_avg::RollingStandard span_avg::shots_for(std::string_view team, const std::vector<Game> &games, int span) {
+
+RollingStandard span_avg::shots_for(std::string_view team, const std::vector<Game> &games, int span) {
     assert(games.size() >= span);
     std::vector<int> shots_for_per_game;
     shots_for_per_game.reserve(games.size());
@@ -84,7 +86,7 @@ span_avg::RollingStandard span_avg::shots_for(std::string_view team, const std::
         return acc + float(shotsPerGame);
     });
 }
-span_avg::RollingStandard span_avg::shots_against(std::string_view team, const std::vector<Game> &games, int span) {
+RollingStandard span_avg::shots_against(std::string_view team, const std::vector<Game> &games, int span) {
     assert(games.size() >= span);
     std::vector<int> shots_against_per_game;
     shots_against_per_game.reserve(games.size());
@@ -102,7 +104,7 @@ span_avg::RollingStandard span_avg::shots_against(std::string_view team, const s
         return acc + float(shotsPerGame);
     });
 }
-span_avg::RollingStandard span_avg::times_in_pk(std::string_view team, const std::vector<Game> &games, int span) {
+RollingStandard span_avg::times_in_pk(std::string_view team, const std::vector<Game> &games, int span) {
     assert(games.size() >= span);
     std::vector<int> times_shorthanded;
     times_shorthanded.reserve(games.size());
@@ -119,7 +121,7 @@ span_avg::RollingStandard span_avg::times_in_pk(std::string_view team, const std
         return acc + float(attemptsPerGame);
     });
 }
-span_avg::RollingStandard span_avg::times_in_pp(std::string_view team, const std::vector<Game> &games, int span) {
+RollingStandard span_avg::times_in_pp(std::string_view team, const std::vector<Game> &games, int span) {
     assert(games.size() >= span);
     std::vector<int> times_in_pp;
     times_in_pp.reserve(games.size());
@@ -136,7 +138,7 @@ span_avg::RollingStandard span_avg::times_in_pp(std::string_view team, const std
         return acc + float(attemptsPerGame);
     });
 }
-span_avg::RollingStandard span_avg::power_play(std::string_view team, const std::vector<Game> &games, int span) {
+RollingStandard span_avg::power_play(std::string_view team, const std::vector<Game> &games, int span) {
     assert(games.size() >= span);
     std::vector<SpecialTeams> pps;
     pps.reserve(games.size());
@@ -152,7 +154,7 @@ span_avg::RollingStandard span_avg::power_play(std::string_view team, const std:
     auto begin = pps.cbegin();
     auto end = pps.cend();
     auto window_end = begin + span;
-    span_avg::RollingStandard result;
+    RollingStandard result;
     for (; window_end <= end; window_end++, begin++) {
         auto pp = std::accumulate(begin, window_end, SpecialTeams{.goals = 0, .attempts = 0}, [](auto acc, auto v) {
             acc.goals += v.goals;
@@ -164,7 +166,7 @@ span_avg::RollingStandard span_avg::power_play(std::string_view team, const std:
     }
     return result;
 }
-span_avg::RollingStandard span_avg::penalty_kill(std::string_view team, const std::vector<Game> &games, int span) {
+RollingStandard span_avg::penalty_kill(std::string_view team, const std::vector<Game> &games, int span) {
     assert(games.size() >= span);
     std::vector<SpecialTeams> pks;
     pks.reserve(games.size());
@@ -180,7 +182,7 @@ span_avg::RollingStandard span_avg::penalty_kill(std::string_view team, const st
     auto begin = pks.cbegin();
     auto end = pks.cend();
     auto window_end = begin + span;
-    span_avg::RollingStandard result;
+    RollingStandard result;
     for (; window_end <= end; window_end++, begin++) {
         auto pp = std::accumulate(begin, window_end, SpecialTeams{.goals = 0, .attempts = 0}, [](auto acc, auto v) {
             acc.goals += v.goals;
@@ -191,8 +193,4 @@ span_avg::RollingStandard span_avg::penalty_kill(std::string_view team, const st
         if (window_end == end) break;
     }
     return result;
-}
-
-span_avg::RollingPeriod span_avg::period_goals_for(std::string_view team, const std::vector<Game> & games, int span){
-
 }

@@ -6,6 +6,9 @@
 #include <string_view>
 #include <vector>
 
+using Games = const std::vector<Game>&;
+using GamesMut = std::vector<Game>&;
+
 /// The wonderful magic of constexpr. pow_10<3> compiles into: "mov eax, 1000" which is exactly what we want
 template <int Exponent>
 constexpr auto pow_10() {
@@ -27,32 +30,49 @@ struct DecimalNumber {
     float value_;
 };
 
+
+template <typename T>
+struct StatPerPeriod {
+    T period[3];
+};
+// Typedefs/using aliases, which facilitates refactoring much cleaner and easier
+using StandardResult = DecimalNumber<2>;
+using PeriodsResult = StatPerPeriod<StandardResult>;
+using RollingStandard = std::vector<StandardResult>;
+using RollingPeriod = std::vector<PeriodsResult>;
+
+
+struct Attempts {
+    int attempts;
+    int success;
+};
+
+namespace total {
+    Attempts empty_net_goals(std::string_view team, Games games);
+    Attempts empty_net_letups(std::string_view team, Games games);
+    // irrelevant under Corona pandemic. The damn teams only play against same division opponents
+    Attempts outcomes_against_division(std::string_view team, Games games);
+    Attempts games_with_pp_goals(std::string_view team, Games games);
+    Attempts games_with_pk_letups(std::string_view team, Games games);
+}
+
 /// Pre-condition of all functions: games.size() >= span. Assertion in debug, in release mode, you're screwed if you don't make sure of this.
 namespace span_avg {
+    RollingStandard goals_for(std::string_view team, Games games, int span);
+    RollingStandard goals_against(std::string_view team, Games games, int span);
+    RollingStandard shots_for(std::string_view team, Games games, int span);
+    RollingStandard shots_against(std::string_view team, Games games, int span);
 
-    template <typename T>
-    struct StatPerPeriod {
-        T period[3];
-    };
-
-    // Typedefs/using aliases, which facilitates refactoring much cleaner and easier
-    using StandardResult = DecimalNumber<2>;
-    using PeriodsResult = StatPerPeriod<StandardResult>;
-    using RollingStandard = std::vector<StandardResult>;
-    using RollingPeriod = std::vector<PeriodsResult>;
-
-    RollingStandard goals_for(std::string_view team, const std::vector<Game>& games, int span);
-    RollingStandard goals_against(std::string_view team, const std::vector<Game>& games, int span);
-    RollingStandard shots_for(std::string_view team, const std::vector<Game>&shotsPerGame, int span);
-    RollingStandard shots_against(std::string_view team, const std::vector<Game>& games, int span);
-
-    RollingStandard power_play(std::string_view team, const std::vector<Game>& games, int span);
-    RollingStandard penalty_kill(std::string_view team, const std::vector<Game>& games, int span);
+    RollingStandard power_play(std::string_view team, Games games, int span);
+    RollingStandard penalty_kill(std::string_view team, Games games, int span);
     RollingStandard times_in_pk(std::string_view team, const std::vector<Game>&attemptsPerGame, int span);
-    RollingStandard times_in_pp(std::string_view team, const std::vector<Game>& games, int span);
+    RollingStandard times_in_pp(std::string_view team, Games games, int span);
 
-    RollingPeriod period_goals_for(std::string_view team, const std::vector<Game>& games, int span);
-    RollingPeriod period_goals_against(std::string_view team, const std::vector<Game>& games, int span);
+    RollingPeriod period_goals_for(std::string_view team, Games games, int span);
+    RollingPeriod period_goals_against(std::string_view team, Games games, int span);
+
+    RollingStandard games_with_pp_goals(std::string_view team, Games games, int span);
+    RollingStandard games_with_pk_letups(std::string_view team, Games games, int span);
 
 }
 
