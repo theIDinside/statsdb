@@ -43,8 +43,8 @@ using RollingPeriod = std::vector<PeriodsResult>;
 
 
 struct Attempts {
-    int attempts{0};
-    int success{0};
+    int total{0};
+    int results{0};
 };
 
 namespace total {
@@ -57,6 +57,12 @@ namespace total {
     Attempts outcomes_against_division(std::string_view team, Games games);
     Attempts games_with_pp_goals(std::string_view team, Games games);
     Attempts games_with_pk_letups(std::string_view team, Games games);
+}
+
+/// Where we ask questions like "What has happenened in prior games at time T, with standing S"
+namespace live {
+    Attempts wins_after_standing(std::string_view team, Games games);
+
 }
 
 /// Pre-condition of all functions: games.size() >= span. Assertion in debug, in release mode, you're screwed if you don't make sure of this.

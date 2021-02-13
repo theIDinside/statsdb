@@ -39,14 +39,14 @@ namespace total {
         auto won_games = games | std::views::filter(won_game_predicate);
         for (const auto &g : won_games) {
             if (g.goalie_probably_pulled) [[likely]] {
-                stat.attempts++;
+                stat.total++;
                 for (const auto &goal : g.goals | std::views::filter(empty_net_goal)) {
-                    stat.success++;
+                    stat.results++;
                 }
             } else {
                 for (const auto &goal : g.goals | std::views::filter(empty_net_goal)) {
-                    stat.attempts++;
-                    stat.success++;
+                    stat.total++;
+                    stat.results++;
                 }
             }
         }
@@ -61,16 +61,42 @@ namespace total {
 
         for (const auto &g : games | std::views::filter(lost_game_predicate)) {
             if (g.goalie_probably_pulled) [[likely]] {
-                stat.attempts++;
+                stat.total++;
                 for (const auto &goal : g.goals | std::views::filter(empty_net_goal)) {
-                    stat.success++;
+                    stat.results++;
                 }
             } else {
                 for (const auto &goal : g.goals | std::views::filter(empty_net_goal)) {
-                    stat.attempts++;
-                    stat.success++;
+                    stat.total++;
+                    stat.results++;
                 }
             }
+        }
+        return stat;
+    }
+
+    Attempts games_with_pp_goals(std::string_view team, const std::vector<Game> &games) {
+        Attempts stat;
+        auto tfm = [&](const auto& g) {
+            return get_special_teams(g, team, SpecialTeams::Type::PowerPlay);
+        };
+
+        for(const auto& pp : games | std::views::transform(tfm)) {
+            stat.total++;
+            if(pp.goals > 0) stat.results++;
+        }
+        return stat;
+    }
+
+    Attempts games_with_pk_letups(std::string_view team, const std::vector<Game> &games) {
+        Attempts stat;
+        auto tfm = [&](const auto& g) {
+          return get_special_teams(g, team, SpecialTeams::Type::PenaltyKilling);
+        };
+
+        for(const auto& pp : games | std::views::transform(tfm)) {
+            stat.total++;
+            if(pp.goals > 0) stat.results++;
         }
         return stat;
     }
@@ -169,6 +195,7 @@ namespace span_avg {
           return acc + float(attemptsPerGame);
         });
     }
+
     RollingStandard times_in_pp(std::string_view team, Games games, int span) {
         assert(games.size() >= span);
         std::vector<int> times_in_pp;
@@ -186,6 +213,7 @@ namespace span_avg {
           return acc + float(attemptsPerGame);
         });
     }
+
     RollingStandard power_play(std::string_view team, Games games, int span) {
         assert(games.size() >= span);
         std::vector<SpecialTeams> pps;
@@ -206,7 +234,7 @@ namespace span_avg {
         for (; window_end <= end; window_end++, begin++) {
             auto pp = std::accumulate(begin, window_end, SpecialTeams{.goals = 0, .attempts = 0}, [](auto acc, auto v) {
               acc.goals += v.goals;
-              acc.attempts += v.attempts;
+              acc.total += v.total;
               return acc;
             });
             result.emplace_back(pp.get_efficiency(SpecialTeams::Type::PowerPlay) * 100.0f);
@@ -214,6 +242,7 @@ namespace span_avg {
         }
         return result;
     }
+
     RollingStandard penalty_kill(std::string_view team, Games games, int span) {
         assert(games.size() >= span);
         std::vector<SpecialTeams> pks;
@@ -234,7 +263,7 @@ namespace span_avg {
         for (; window_end <= end; window_end++, begin++) {
             auto pp = std::accumulate(begin, window_end, SpecialTeams{.goals = 0, .attempts = 0}, [](auto acc, auto v) {
               acc.goals += v.goals;
-              acc.attempts += v.attempts;
+              acc.total += v.total;
               return acc;
             });
             result.emplace_back(pp.get_efficiency(SpecialTeams::Type::PenaltyKilling) * 100.0f);

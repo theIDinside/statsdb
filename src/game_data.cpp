@@ -47,3 +47,22 @@ float SpecialTeams::get_efficiency(SpecialTeams::Type type) const {
             return 1.0f - float(goals) / float(attempts);
     }
 }
+
+SpecialTeams get_special_teams(const Game &game, std::string_view team, SpecialTeams::Type type) {
+    assert(game.game_info.home == team || game.game_info.away == team);
+    if(game.game_info.home == team) {
+        switch (type) {
+            case SpecialTeams::Type::PowerPlay:
+                return game.power_play.home;
+            case SpecialTeams::Type::PenaltyKilling:
+                return game.power_play.away;
+        }
+    } else {
+        switch (type) {
+            case SpecialTeams::Type::PowerPlay:
+                return game.power_play.away;
+            case SpecialTeams::Type::PenaltyKilling:
+                return game.power_play.home;
+        }
+    }
+}

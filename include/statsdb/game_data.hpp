@@ -126,3 +126,5 @@ struct Game {
     std::vector<Goal> goals;
     bool goalie_probably_pulled;
 };
+
+SpecialTeams get_special_teams(const Game& game, std::string_view team, SpecialTeams::Type type);
