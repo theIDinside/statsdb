@@ -43,11 +43,14 @@ using RollingPeriod = std::vector<PeriodsResult>;
 
 
 struct Attempts {
-    int attempts;
-    int success;
+    int attempts{0};
+    int success{0};
 };
 
 namespace total {
+    /// Returns games where opponents pulled goalie, and where team scored in empty net
+    /// Note that these stats do _not_ take into account, when the team is 5v4, and the opposing team pull goalie
+    /// to be 5v5, for reasons related (currently) to scraping complexity
     Attempts empty_net_goals(std::string_view team, Games games);
     Attempts empty_net_letups(std::string_view team, Games games);
     // irrelevant under Corona pandemic. The damn teams only play against same division opponents

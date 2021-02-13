@@ -6,6 +6,8 @@
 #include <vector>
 #include <numeric>
 #include <cassert>
+#include <ranges>
+
 
 namespace utils {
     using WSize = std::size_t;
