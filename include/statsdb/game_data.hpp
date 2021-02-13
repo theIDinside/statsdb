@@ -122,4 +122,5 @@ struct Game {
     IntResult give_aways;
     IntResult take_aways;
     std::vector<Goal> goals;
+    bool goalie_probably_pulled;
 };

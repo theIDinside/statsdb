@@ -82,4 +82,5 @@ void from_json(const json& j, Game& game) {
     j.at("give_aways").get_to(game.give_aways);
     j.at("face_offs").at("away").get_to(game.face_off.away);
     j.at("face_offs").at("home").get_to(game.face_off.home);
+    j.at("goalie_probably_pulled").get_to(game.goalie_probably_pulled);
 }
