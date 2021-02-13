@@ -29,11 +29,30 @@ struct DecimalNumber {
 
 /// Pre-condition of all functions: games.size() >= span. Assertion in debug, in release mode, you're screwed if you don't make sure of this.
 namespace span_avg {
-    std::vector<DecimalNumber<2>> goals_for(std::string_view team, const std::vector<Game>& games, int span);
-    std::vector<DecimalNumber<2>> goals_against(std::string_view team, const std::vector<Game>& games, int span);
-    std::vector<DecimalNumber<2>> power_play(std::string_view team, const std::vector<Game>& games, int span);
-    std::vector<DecimalNumber<2>> penalty_kill(std::string_view team, const std::vector<Game>& games, int span);
-    std::vector<DecimalNumber<2>> times_in_pk(std::string_view team, const std::vector<Game>& games, int span);
-    std::vector<DecimalNumber<2>> times_in_pp(std::string_view team, const std::vector<Game>& games, int span);
+
+    template <typename T>
+    struct StatPerPeriod {
+        T period[3];
+    };
+
+    // Typedefs/using aliases, which facilitates refactoring much cleaner and easier
+    using StandardResult = DecimalNumber<2>;
+    using PeriodsResult = StatPerPeriod<StandardResult>;
+    using RollingStandard = std::vector<StandardResult>;
+    using RollingPeriod = std::vector<PeriodsResult>;
+
+    RollingStandard goals_for(std::string_view team, const std::vector<Game>& games, int span);
+    RollingStandard goals_against(std::string_view team, const std::vector<Game>& games, int span);
+    RollingStandard shots_for(std::string_view team, const std::vector<Game>&shotsPerGame, int span);
+    RollingStandard shots_against(std::string_view team, const std::vector<Game>& games, int span);
+
+    RollingStandard power_play(std::string_view team, const std::vector<Game>& games, int span);
+    RollingStandard penalty_kill(std::string_view team, const std::vector<Game>& games, int span);
+    RollingStandard times_in_pk(std::string_view team, const std::vector<Game>&attemptsPerGame, int span);
+    RollingStandard times_in_pp(std::string_view team, const std::vector<Game>& games, int span);
+
+    RollingPeriod period_goals_for(std::string_view team, const std::vector<Game>& games, int span);
+    RollingPeriod period_goals_against(std::string_view team, const std::vector<Game>& games, int span);
+
 }
 

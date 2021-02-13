@@ -11,13 +11,32 @@
 #include <algorithm>
 #include <cassert>
 
+#ifdef DEBUG
+#define TEAM_ASSERTION(team, game) assert((game.game_info.away == team || game.game_info.home == team) && "You passed games that team did not play in. You fucked up.")
 
-std::vector<DecimalNumber<2>> span_avg::goals_for(std::string_view team, const std::vector<Game> &games, int span) {
+#define VERSUS_ASSERT_SWITCH(team, game) \
+    TEAM_ASSERTION(team, game);          \
+    switch (game.game_info.venue(team))
+#define ON_ERR_EXIT                                                                                                                                    \
+    Versus::Err : println("You passed the wrong team name to this game: {}. Teams playing: {} vs {}", team, game.game_info.away, game.game_info.home); \
+    exit(-1);
+#else
+#define VERSUS_ASSERT_SWITCH(team, game) \
+    switch (game.game_info.venue(team))
+
+#define ON_ERR_EXIT                                                                                                                                    \
+    Versus::Err : println("You passed the wrong team name to this game: {}. Teams playing: {} vs {}", team, game.game_info.away, game.game_info.home); \
+    exit(-1);
+#endif
+
+span_avg::RollingStandard span_avg::goals_for(std::string_view team, const std::vector<Game> &games, int span) {
     assert(games.size() >= span);
     std::vector<int> goals;
+    goals.reserve(games.size());
     std::transform(games.cbegin(), games.cend(), std::back_inserter(goals), [&](const Game &game) {
+        TEAM_ASSERTION(team, game);
         auto res = 0;
-        for(const Goal& goal : game.goals) {
+        for (const Goal &goal : game.goals) {
             if (goal.scoring_team == team) {
                 if (goal.strength != TeamStrength::SHOOTOUT) res++;
             }
@@ -25,64 +44,155 @@ std::vector<DecimalNumber<2>> span_avg::goals_for(std::string_view team, const s
         return res;
     });
     auto fn = [](float acc, int goalsPerGame) {
-      return acc + float(goalsPerGame);
+        return acc + float(goalsPerGame);
     };
     return utils::window_average<DecimalNumber<2>>(goals, static_cast<std::size_t>(span), +fn);
 }
+span_avg::RollingStandard span_avg::goals_against(std::string_view team, const std::vector<Game> &games, int span) {
+    assert(games.size() >= span);
+    std::vector<int> goals;
+    goals.reserve(games.size());
+    std::transform(games.cbegin(), games.cend(), std::back_inserter(goals), [&](const Game &game) {
+        TEAM_ASSERTION(team, game);
+        auto res = 0;
+        for (const Goal &goal : game.goals) {
+            if (goal.scoring_team != team) {
+                if (goal.strength != TeamStrength::SHOOTOUT) res++;
+            }
+        }
+        return res;
+    });
+    return utils::window_average<DecimalNumber<2>>(goals, static_cast<std::size_t>(span), [](float acc, int goalsPerGame) {
+        return acc + float(goalsPerGame);
+    });
+}
+span_avg::RollingStandard span_avg::shots_for(std::string_view team, const std::vector<Game> &games, int span) {
+    assert(games.size() >= span);
+    std::vector<int> shots_for_per_game;
+    shots_for_per_game.reserve(games.size());
+    std::transform(games.cbegin(), games.cend(), std::back_inserter(shots_for_per_game), [&](const Game &game) {
+        VERSUS_ASSERT_SWITCH(team, game) {
+            case Versus::Home:
+                return std::accumulate(game.shots.begin(), game.shots.end(), 0, [](auto acc, auto period) { return acc + period.home; });
+            case Versus::Away:
+                return std::accumulate(game.shots.begin(), game.shots.end(), 0, [](auto acc, auto period) { return acc + period.away; });
+            case ON_ERR_EXIT
+        }
+    });
 
-std::vector<DecimalNumber<2>> span_avg::power_play(std::string_view team, const std::vector<Game> &games, int span) {
+    return utils::window_average<DecimalNumber<2>>(shots_for_per_game, static_cast<std::size_t>(span), [](float acc, int shotsPerGame) {
+        return acc + float(shotsPerGame);
+    });
+}
+span_avg::RollingStandard span_avg::shots_against(std::string_view team, const std::vector<Game> &games, int span) {
+    assert(games.size() >= span);
+    std::vector<int> shots_against_per_game;
+    shots_against_per_game.reserve(games.size());
+    std::transform(games.cbegin(), games.cend(), std::back_inserter(shots_against_per_game), [&](const Game &game) {
+        VERSUS_ASSERT_SWITCH(team, game) {
+            case Versus::Home:
+                return std::accumulate(game.shots.begin(), game.shots.end(), 0, [](auto acc, auto period) { return acc + period.away; });
+            case Versus::Away:
+                return std::accumulate(game.shots.begin(), game.shots.end(), 0, [](auto acc, auto period) { return acc + period.home; });
+            case ON_ERR_EXIT
+        }
+    });
+
+    return utils::window_average<DecimalNumber<2>>(shots_against_per_game, static_cast<std::size_t>(span), [](float acc, int shotsPerGame) {
+        return acc + float(shotsPerGame);
+    });
+}
+span_avg::RollingStandard span_avg::times_in_pk(std::string_view team, const std::vector<Game> &games, int span) {
+    assert(games.size() >= span);
+    std::vector<int> times_shorthanded;
+    times_shorthanded.reserve(games.size());
+    std::transform(games.cbegin(), games.cend(), std::back_inserter(times_shorthanded), [&](const Game &game) {
+        VERSUS_ASSERT_SWITCH(team, game) {
+            case Versus::Home:
+                return game.power_play.away.attempts;
+            case Versus::Away:
+                return game.power_play.home.attempts;
+            case ON_ERR_EXIT
+        }
+    });
+    return utils::window_average<DecimalNumber<2>>(times_shorthanded, static_cast<std::size_t>(span), [](float acc, int attemptsPerGame) {
+        return acc + float(attemptsPerGame);
+    });
+}
+span_avg::RollingStandard span_avg::times_in_pp(std::string_view team, const std::vector<Game> &games, int span) {
+    assert(games.size() >= span);
+    std::vector<int> times_in_pp;
+    times_in_pp.reserve(games.size());
+    std::transform(games.cbegin(), games.cend(), std::back_inserter(times_in_pp), [&](const Game &game) {
+        VERSUS_ASSERT_SWITCH(team, game) {
+            case Versus::Home:
+                return game.power_play.home.attempts;
+            case Versus::Away:
+                return game.power_play.away.attempts;
+            case ON_ERR_EXIT
+        }
+    });
+    return utils::window_average<DecimalNumber<2>>(times_in_pp, static_cast<std::size_t>(span), [](float acc, int attemptsPerGame) {
+        return acc + float(attemptsPerGame);
+    });
+}
+span_avg::RollingStandard span_avg::power_play(std::string_view team, const std::vector<Game> &games, int span) {
     assert(games.size() >= span);
     std::vector<SpecialTeams> pps;
-
-    for(const auto& g : games) {
-
-    }
-
-    std::transform(games.cbegin(), games.cend(), std::back_inserter(pps), [&](const Game& game) {
-        if(game.game_info.home == team) {
-            return game.power_play.home;
-        } else {
-            return game.power_play.away;
+    pps.reserve(games.size());
+    std::transform(games.cbegin(), games.cend(), std::back_inserter(pps), [&](const Game &game) {
+        VERSUS_ASSERT_SWITCH(team, game) {
+            case Versus::Home:
+                return game.power_play.home;
+            case Versus::Away:
+                return game.power_play.away;
+            case ON_ERR_EXIT
         }
     });
     auto begin = pps.cbegin();
     auto end = pps.cend();
     auto window_end = begin + span;
-    std::vector<DecimalNumber<2>> result;
-    for(; window_end <= end; window_end++, begin++) {
-        auto pp = std::accumulate(begin, window_end, SpecialTeams{.goals = 0,.attempts = 0}, [](auto acc, auto v) {
+    span_avg::RollingStandard result;
+    for (; window_end <= end; window_end++, begin++) {
+        auto pp = std::accumulate(begin, window_end, SpecialTeams{.goals = 0, .attempts = 0}, [](auto acc, auto v) {
             acc.goals += v.goals;
             acc.attempts += v.attempts;
             return acc;
         });
         result.emplace_back(pp.get_efficiency(SpecialTeams::Type::PowerPlay) * 100.0f);
-        if(window_end == end) break;
+        if (window_end == end) break;
+    }
+    return result;
+}
+span_avg::RollingStandard span_avg::penalty_kill(std::string_view team, const std::vector<Game> &games, int span) {
+    assert(games.size() >= span);
+    std::vector<SpecialTeams> pks;
+    pks.reserve(games.size());
+    std::transform(games.cbegin(), games.cend(), std::back_inserter(pks), [&](const Game &game) {
+        VERSUS_ASSERT_SWITCH(team, game) {
+            case Versus::Home:
+                return game.power_play.away;
+            case Versus::Away:
+                return game.power_play.home;
+            case ON_ERR_EXIT
+        }
+    });
+    auto begin = pks.cbegin();
+    auto end = pks.cend();
+    auto window_end = begin + span;
+    span_avg::RollingStandard result;
+    for (; window_end <= end; window_end++, begin++) {
+        auto pp = std::accumulate(begin, window_end, SpecialTeams{.goals = 0, .attempts = 0}, [](auto acc, auto v) {
+            acc.goals += v.goals;
+            acc.attempts += v.attempts;
+            return acc;
+        });
+        result.emplace_back(pp.get_efficiency(SpecialTeams::Type::PenaltyKilling) * 100.0f);
+        if (window_end == end) break;
     }
     return result;
 }
 
-std::vector<DecimalNumber<2>> span_avg::penalty_kill(std::string_view team, const std::vector<Game> &games, int span) {
-    assert(games.size() >= span);
-    std::vector<SpecialTeams> pps;
-    std::transform(games.cbegin(), games.cend(), std::back_inserter(pps), [&](const Game& game) {
-      if(game.game_info.home == team) {
-          return game.power_play.away;
-      } else {
-          return game.power_play.home;
-      }
-    });
-    auto begin = pps.cbegin();
-    auto end = pps.cend();
-    auto window_end = begin + span;
-    std::vector<DecimalNumber<2>> result;
-    for(; window_end <= end; window_end++, begin++) {
-        auto pp = std::accumulate(begin, window_end, SpecialTeams{.goals = 0,.attempts = 0}, [](auto acc, auto v) {
-          acc.goals += v.goals;
-          acc.attempts += v.attempts;
-          return acc;
-        });
-        result.emplace_back(pp.get_efficiency(SpecialTeams::Type::PenaltyKilling) * 100.0f);
-        if(window_end == end) break;
-    }
-    return result;
+span_avg::RollingPeriod span_avg::period_goals_for(std::string_view team, const std::vector<Game> & games, int span){
+
 }

@@ -382,18 +382,33 @@ void test_get_games_feb08(Database &db) {
 }
 
 void test_span_average_gf(Database &db) {
-    auto date = CalendarDate{.year = 2021, .month = 2, .day = 8};
-    auto all_games = db.get_games_played_by("TORONTO MAPLE LEAFS");
-    auto tor_test = make_toronto_tests();
 
+    auto all_games = db.get_games_played_by("TORONTO MAPLE LEAFS");
     auto gfs = span_avg::goals_for("TOR", all_games.value(), 5);
+    auto gas = span_avg::goals_against("TOR", all_games.value(), 5);
+
+    auto pps = span_avg::power_play("TOR", all_games.value(), 5);
+    auto pks = span_avg::penalty_kill("TOR", all_games.value(), 5);
+
     // auto pks = span_avg::goals_against("TOR", all_games.value(), 10);
     println("GF 5-span average:");
     for(auto gf : gfs) {
         fmt::print("{}, ", gf.value());
     }
-    println("{}", "\n");
+    println("\nGA 5-span average:");
+    for(auto ga : gas) {
+        fmt::print("{}, ", ga.value());
+    }
 
+    println("\nPP efficiency over 5-game span rolling");
+    for(auto pp : pps) {
+        fmt::print("{}, ", pp.value());
+    }
+
+    println("\nPK efficiency over 5-game span rolling");
+    for(auto pk : pks) {
+        fmt::print("{}, ", pk.value());
+    }
 }
 
 int main(int argc, const char **argv) {

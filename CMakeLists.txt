@@ -63,5 +63,10 @@ target_include_directories(
         $<INSTALL_INTERFACE:include>
 )
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message("Debug build set")
+    add_compile_definitions(statsdb DEBUG)
+endif()
+
 add_executable(test_deserialize tests/deserialize.cpp)
 target_link_libraries(test_deserialize statsdb)

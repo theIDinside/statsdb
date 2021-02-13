@@ -8,41 +8,59 @@
 #include "calendar_date.hpp"
 
 // system headers
+#include <cassert>
+#include <fmt/format.h>
 #include <string>
 #include <vector>
-#include <fmt/format.h>
 
-template <typename T>
+template<typename T>
 struct TeamsValueHolder {
     T home;
     T away;
 };
 
-struct Team
-{
+struct Team {
     u8 id;
     std::string name;
     std::vector<std::string> abbreviations;
-    friend bool operator==(const Team& lhs, const Team& rhs);
-    friend bool operator<(const Team& lhs, const Team& rhs);
-    friend bool operator>(const Team& lhs, const Team& rhs);
-    friend bool operator==(const Team& lhs, const std::string& team_string);
-    friend bool operator==(const Team& lhs, std::string_view team_string);
+    friend bool operator==(const Team &lhs, const Team &rhs);
+    friend bool operator<(const Team &lhs, const Team &rhs);
+    friend bool operator>(const Team &lhs, const Team &rhs);
+    friend bool operator==(const Team &lhs, const std::string &team_string);
+    friend bool operator==(const Team &lhs, std::string_view team_string);
+};
+
+enum class Versus {
+    Home,
+    Away,
+    Err
 };
 
 using CDate = CalendarDate;
-struct GameInfo
-{
-    u32      game_id;
+struct GameInfo {
+    u32 game_id;
     std::string home, away;
-    CDate    date;
-    [[nodiscard]] std::string to_string() const {
+    CDate date;
+    // clang-format off
+    [[nodiscard]]
+    std::string to_string() const {// clang-format on
         return fmt::format("{} - {} vs {} played {}-{:0>2}-{:0>2}", game_id, away, home, date.year, date.month, date.day);
+    }
+    // clang-format off
+    [[nodiscard]]
+    Versus venue(std::string_view team) const {// clang-format on
+        if (home == team) {
+            return Versus::Home;
+        }
+        if (away == team) {
+            return Versus::Away;
+        }
+        assert(false && "You passed team to game where team did not play");
+        return Versus::Err;
     }
 };
 
-struct Time
-{
+struct Time {
     u8 minutes;
     u8 seconds;
 };
@@ -66,8 +84,7 @@ enum class TeamStrength {
     SHOOTOUT
 };
 
-struct Goal
-{
+struct Goal {
     u8 goal_number;
     GameTime time;
     TeamStrength strength;
@@ -82,15 +99,17 @@ struct SpecialTeams {
     };
     int goals;
     int attempts;
+    // clang-format off
+    [[nodiscard]]
     float get_efficiency(Type type) const;
+    // clang-format on
 };
 
 using IntResult = TeamsValueHolder<int>;
 using FloatResult = TeamsValueHolder<float>;
 using PowerPlay = TeamsValueHolder<SpecialTeams>;
 
-struct Game
-{
+struct Game {
     GameInfo game_info;
     std::string winning_team;
     std::vector<IntResult> shots;

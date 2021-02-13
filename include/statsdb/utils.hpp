@@ -47,6 +47,7 @@ namespace utils {
         f(float{}, ElType{});
     };
 
+    /// Calculates the rolling span average, of a span of window_size, across the elements in c
     template <typename Number, IterableContainer C, typename AccFn>
     auto window_average(const C& c, std::size_t window_size, AccFn fn) {
         assert(window_size <= c.size());
