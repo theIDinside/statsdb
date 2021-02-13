@@ -17,10 +17,12 @@ constexpr auto pow_10() {
     return r;
 }
 
+/// Utility class. Templated on the amount of decimal points / what accuracy the number is. can implicitly be converted to/from floats
+/// So DecimalNumber<2> num = 0.547f -> 0.55 and DecimalNumber<1> num = 0.547 -> 0.5
 template <int DecimalPoints>
-struct DecimalNumber {
-    constexpr DecimalNumber() : value_{0.0f} {}
-    constexpr DecimalNumber(float f) {
+struct RoundedDecimalNumber {
+    constexpr RoundedDecimalNumber() : value_{0.0f} {}
+    constexpr RoundedDecimalNumber(float f) {
         float pow = pow_10<DecimalPoints>();
         float tmp = std::round(f * pow);
         value_ = float(tmp) / pow;
@@ -36,9 +38,10 @@ struct StatPerPeriod {
     T period[3];
 };
 // Typedefs/using aliases, which facilitates refactoring much cleaner and easier
-using StandardResult = DecimalNumber<2>;
-using PeriodsResult = StatPerPeriod<StandardResult>;
-using RollingStandard = std::vector<StandardResult>;
+using Number = RoundedDecimalNumber<2>;
+using StandardResult = RoundedDecimalNumber<2>;
+using PeriodsResult = StatPerPeriod<Number>;
+using RollingStandard = std::vector<Number>;
 using RollingPeriod = std::vector<PeriodsResult>;
 
 

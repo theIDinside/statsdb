@@ -481,11 +481,9 @@ void test_count_empty_net_goals(Database& db) {
             new_line = 0;
         }
     }
-
-    println("\nAsserting that all empty net goals were in game with pulled goalie");
-    for(auto en : games_with_empty_net_goals) {
-
-    }
+    println("");
+    RoundedDecimalNumber<3> empty_net_ratio = static_cast<float>(games_with_empty_net_goals.size()) / static_cast<float>(games_with_pulled_goalies.size()) * 100.0f;
+    println("Games with pulled goalie: {} - Games with empty net goals {}. {}%", games_with_pulled_goalies.size(), games_with_empty_net_goals.size(), (float)empty_net_ratio);
 
 }
 

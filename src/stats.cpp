@@ -120,7 +120,7 @@ namespace span_avg {
         auto fn = [](float acc, int goalsPerGame) {
             return acc + float(goalsPerGame);
         };
-        return utils::window_average<DecimalNumber<2>>(goals, static_cast<std::size_t>(span), +fn);
+        return utils::window_average<RoundedDecimalNumber<2>>(goals, static_cast<std::size_t>(span), +fn);
     }
 
     RollingStandard goals_against(std::string_view team, Games games, int span) {
@@ -137,7 +137,7 @@ namespace span_avg {
             }
             return res;
         });
-        return utils::window_average<DecimalNumber<2>>(goals, static_cast<std::size_t>(span), [](float acc, int goalsPerGame) {
+        return utils::window_average<RoundedDecimalNumber<2>>(goals, static_cast<std::size_t>(span), [](float acc, int goalsPerGame) {
             return acc + float(goalsPerGame);
         });
     }
@@ -156,7 +156,7 @@ namespace span_avg {
         }
         });
 
-        return utils::window_average<DecimalNumber<2>>(shots_for_per_game, static_cast<std::size_t>(span), [](float acc, int shotsPerGame) {
+        return utils::window_average<RoundedDecimalNumber<2>>(shots_for_per_game, static_cast<std::size_t>(span), [](float acc, int shotsPerGame) {
           return acc + float(shotsPerGame);
         });
     }
@@ -174,7 +174,7 @@ namespace span_avg {
         }
         });
 
-        return utils::window_average<DecimalNumber<2>>(shots_against_per_game, static_cast<std::size_t>(span), [](float acc, int shotsPerGame) {
+        return utils::window_average<RoundedDecimalNumber<2>>(shots_against_per_game, static_cast<std::size_t>(span), [](float acc, int shotsPerGame) {
           return acc + float(shotsPerGame);
         });
     }
@@ -191,7 +191,7 @@ namespace span_avg {
                 ON_ERR_EXIT
         }
         });
-        return utils::window_average<DecimalNumber<2>>(times_shorthanded, static_cast<std::size_t>(span), [](float acc, int attemptsPerGame) {
+        return utils::window_average<RoundedDecimalNumber<2>>(times_shorthanded, static_cast<std::size_t>(span), [](float acc, int attemptsPerGame) {
           return acc + float(attemptsPerGame);
         });
     }
@@ -209,7 +209,7 @@ namespace span_avg {
             ON_ERR_EXIT
         }
         });
-        return utils::window_average<DecimalNumber<2>>(times_in_pp, static_cast<std::size_t>(span), [](float acc, int attemptsPerGame) {
+        return utils::window_average<RoundedDecimalNumber<2>>(times_in_pp, static_cast<std::size_t>(span), [](float acc, int attemptsPerGame) {
           return acc + float(attemptsPerGame);
         });
     }
@@ -234,7 +234,7 @@ namespace span_avg {
         for (; window_end <= end; window_end++, begin++) {
             auto pp = std::accumulate(begin, window_end, SpecialTeams{.goals = 0, .attempts = 0}, [](auto acc, auto v) {
               acc.goals += v.goals;
-              acc.total += v.total;
+              acc.attempts += v.attempts;
               return acc;
             });
             result.emplace_back(pp.get_efficiency(SpecialTeams::Type::PowerPlay) * 100.0f);
@@ -263,7 +263,7 @@ namespace span_avg {
         for (; window_end <= end; window_end++, begin++) {
             auto pp = std::accumulate(begin, window_end, SpecialTeams{.goals = 0, .attempts = 0}, [](auto acc, auto v) {
               acc.goals += v.goals;
-              acc.total += v.total;
+              acc.attempts += v.attempts;
               return acc;
             });
             result.emplace_back(pp.get_efficiency(SpecialTeams::Type::PenaltyKilling) * 100.0f);
