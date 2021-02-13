@@ -92,6 +92,8 @@ struct Goal {
     std::string scoring_player;
 };
 
+bool empty_net_goal(const Goal& g);
+
 struct SpecialTeams {
     enum class Type {
         PowerPlay,

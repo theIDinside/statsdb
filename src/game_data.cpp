@@ -28,6 +28,16 @@ bool operator<(const Team& lhs, const Team& rhs) {
 bool operator>(const Team& lhs, const Team& rhs) {
     return lhs.id > rhs.id;
 }
+bool empty_net_goal(const Goal &g) {
+    switch(g.strength) {
+        case TeamStrength::EVEN_EMPTY_NET:
+        case TeamStrength::SHORT_HANDED_EMPTY_NET:
+        case TeamStrength::POWER_PLAY_EMPTY_NET:
+            return true;
+        default:
+            return false;
+    }
+}
 
 float SpecialTeams::get_efficiency(SpecialTeams::Type type) const {
     switch(type) {

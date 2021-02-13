@@ -411,15 +411,89 @@ void test_span_average_gf(Database &db) {
     }
 }
 
+void test_count_empty_net_goals(Database& db) {
+    auto all_games = db.get_all_games();
+    println("Played games in season: {}", all_games.size());
+    auto times_goalie_pulled = 0;
+    auto empty_net_goals = 0;
+    std::vector<int> games_with_pulled_goalies;
+    std::vector<int> games_with_empty_net_goals;
+
+    auto last_game_with_en = 0;
+    Goal last_en_goal;
+    for(auto& [id, game] : all_games) {
+        for(const auto& g : game.goals) {
+            if(empty_net_goal(g)) {
+                if(id == last_game_with_en) {
+                    println("THIS GAME: {} HAD TWO EN GOALS: {} and {}", id, last_en_goal.goal_number, g.goal_number);
+                }
+                last_en_goal = g;
+                last_game_with_en = id;
+                games_with_empty_net_goals.push_back(id);
+                empty_net_goals++;
+            }
+        }
+        if(game.goalie_probably_pulled) {
+            games_with_pulled_goalies.push_back(id);
+            times_goalie_pulled++;
+        }
+    }
+    std::ranges::sort(games_with_pulled_goalies);
+    std::ranges::sort(games_with_empty_net_goals);
+
+    std::vector<int> pg_dup;
+    auto prev = 0;
+    for(auto pg : games_with_pulled_goalies) {
+        if(prev == pg) pg_dup.push_back(pg);
+        prev = pg;
+    }
+    std::vector<int> en_dup;
+    prev = 0;
+    for(auto en : games_with_empty_net_goals) {
+        if(prev == en) en_dup.push_back(en);
+        prev = en;
+    }
+    println("Duplicates: {} / {}", pg_dup.size(), en_dup.size());
+    for(auto i : pg_dup) {
+        fmt::print("{}, ", i);
+    }
+    println("");
+    for(auto i : en_dup) {
+        fmt::print("{}, ", i);
+    }
+    println("");
+    println("Games with pulled goalies: ");
+    auto new_line = 0;
+    for(auto pg : games_with_pulled_goalies) {
+        fmt::print("{}, ", pg);
+        new_line++;
+        if(new_line == 10) {
+            fmt::print("\n");
+            new_line = 0;
+        }
+    }
+    println("\nGames with empty netters: ");
+    for(auto en : games_with_empty_net_goals) {
+        fmt::print("{}, ", en);
+        new_line++;
+        if(new_line == 10) {
+            fmt::print("\n");
+            new_line = 0;
+        }
+    }
+
+    println("\nAsserting that all empty net goals were in game with pulled goalie");
+    for(auto en : games_with_empty_net_goals) {
+
+    }
+
+}
+
 int main(int argc, const char **argv) {
     std::cout << "assets root dir set at: "
               << "./assets" << std::endl;
     auto db = Database::create("assets");
-    test_get_toronto_played_7th_feb(*db);
-    test_get_toronto_wins(*db);
-    test_toronto_goals(*db);
-    test_get_games_feb08(*db);
-    verify_toronto_team_standings(*db);
-    verify_boston_team_standings(*db);
-    test_span_average_gf(*db);
+
+
+    test_count_empty_net_goals(*db);
 }
