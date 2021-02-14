@@ -3,3 +3,4 @@ cmake-build-debug/
 deps/
 .idea/
 statsdb_bin/
+cmake-build-relwithdebinfo/

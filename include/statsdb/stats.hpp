@@ -79,10 +79,20 @@ namespace live {
 
 /// Pre-condition of all functions: games.size() >= span. Assertion in debug, in release mode, you're screwed if you don't make sure of this.
 namespace span_avg {
+
+    namespace period {
+        RollingPeriod goals_for(std::string_view team, Games games, int span);
+        RollingPeriod goals_against(std::string_view team, Games games, int span);
+        RollingPeriod shots_for(std::string_view team, Games games, int span);    // TODO: write test
+        RollingPeriod shots_against(std::string_view team, Games games, int span);// TODO: write test
+    }
+
     RollingStandard goals_for(std::string_view team, Games games, int span);
     RollingStandard goals_against(std::string_view team, Games games, int span);
     RollingStandard shots_for(std::string_view team, Games games, int span);    // TODO: write test
     RollingStandard shots_against(std::string_view team, Games games, int span);// TODO: write test
+
+
 
     RollingStandard power_play(std::string_view team, Games games, int span);
     RollingStandard penalty_kill(std::string_view team, Games games, int span);

@@ -7,6 +7,7 @@ set(STATSDB_LIB_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
+
 option(JSON_BuildTests OFF) # We don't want to build the damn tests. It takes 5 times as long as building my project.
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 # For deserializing json data
@@ -21,11 +22,6 @@ FetchContent_Declare(
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/deps/json
 )
 
-if (NOT json_POPULATED)
-    FetchContent_Populate(json)
-    add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
-
 FetchContent_Declare(
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
@@ -33,10 +29,19 @@ FetchContent_Declare(
         GIT_PROGRESS TRUE
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/deps/fmt
 )
+
+FetchContent_GetProperties(json)
+if (NOT json_POPULATED)
+    FetchContent_Populate(json)
+endif()
+FetchContent_GetProperties(fmt)
 if (NOT fmt_POPULATED)
    FetchContent_Populate(fmt)
-   add_subdirectory(${fmt_SOURCE_DIR} ${fmt_BINARY_DIR})
+
 endif ()
+
+add_subdirectory(${fmt_SOURCE_DIR} ${fmt_BINARY_DIR})
+add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 
 add_library(statsdb
         src/game_data.cpp
@@ -71,3 +76,4 @@ endif()
 
 add_executable(test_deserialize tests/deserialize.cpp)
 target_link_libraries(test_deserialize statsdb)
+add_subdirectory(benchmark)

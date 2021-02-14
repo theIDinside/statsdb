@@ -274,6 +274,43 @@ namespace span_avg {
     }
 }// namespace span_avg
 
+namespace span_avg::period {
+    /*
+    RollingPeriod goals_for(std::string_view team, const std::vector<Game> &games, int span) {
+        assert(games.size() >= span);
+        PeriodsResult stat;
+        std::vector<int> goals;
+        goals.reserve(games.size());
+        auto filter_goals = [team](const auto goal) {
+          return goal.scoring_team == team;
+        };
+
+
+        for(auto goals_per_game : games | std::views::transform([](const auto& game) { return game.goals; })) {
+            for(const auto& goal : goals_per_game | std::views::filter(filter_goals)) {
+
+            }
+        }
+
+
+
+        std::transform(games.cbegin(), games.cend(), std::back_inserter(goals), [&](const Game &game) {
+          TEAM_ASSERTION(team, game);
+          auto res = 0;
+          for (const Goal &goal : game.goals) {
+              if (goal.scoring_team == team) {
+                  if (goal.strength != TeamStrength::SHOOTOUT) res++;
+              }
+          }
+          return res;
+        });
+        auto fn = [](float acc, int goalsPerGame) -> float {
+          return acc + float(goalsPerGame);
+        };
+        return utils::window_average<RoundedDecimalNumber<2>>(goals, static_cast<std::size_t>(span), +fn);
+    }*/
+}
+
 namespace live {
     Attempts outcomes_after_standing(LiveParameter params, const std::vector<Game> &games) {
         Attempts stat;
