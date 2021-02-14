@@ -53,6 +53,7 @@ add_library(statsdb
         include/statsdb/db.hpp
         include/statsdb/stats.hpp
         include/statsdb/utils.hpp
+        include/statsdb/enumerate.hpp
         )
 
 target_link_libraries(statsdb nlohmann_json::nlohmann_json fmt)

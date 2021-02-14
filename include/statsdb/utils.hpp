@@ -7,6 +7,7 @@
 #include <numeric>
 #include <cassert>
 #include <ranges>
+#include <span>
 
 
 namespace utils {
@@ -49,24 +50,27 @@ namespace utils {
         f(float{}, ElType{});
     };
 
+    template<class ElementType, std::size_t SpanWidth> [[nodiscard]]
+    constexpr auto slide(std::span<ElementType, SpanWidth> span, std::size_t offset, std::size_t width) {
+        return span.subspan(offset, offset + width <= span.size() ? width : 0U);
+    }
+
+    template<typename T, std::size_t N, typename AccFn>
+    auto span_accumulate(std::span<T, N> span, AccFn fn) {
+        return std::accumulate(span.begin(), span.end(), T{}, fn);
+    }
     /// Calculates the rolling span average, of a span of window_size, across the elements in c
     template <typename Number, IterableContainer C, typename AccFn>
-    auto window_average(const C& c, std::size_t window_size, AccFn fn) {
-        assert(window_size <= c.size());
-
-        auto begin = c.cbegin();
-        auto end = c.cend();
-        auto window_end = begin + window_size;
+    auto window_average(const C& container, std::size_t window_size, AccFn fn) {
+        assert(window_size <= container.size());
         std::vector<Number> results;
-        for(; window_end <= end; window_end++, begin++) {
-            auto value = 0.0f;
-            for(auto start = begin; start != window_end; start++) {
-                auto tmp = *start;
-                value += tmp;
-            }
+        std::span season_span{container};
+        for(std::size_t offset = 0; ; ++offset) {
+            auto game_span = slide(season_span, offset, window_size);
+            if(game_span.empty()) break;
+            float value = span_accumulate(game_span, fn);
             Number res = float(value / window_size);
             results.push_back(res);
-            if(window_end == end) break;
         }
         return results;
     }
