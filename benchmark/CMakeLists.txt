@@ -5,7 +5,6 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/google/googletest.git
         GIT_TAG master
         GIT_PROGRESS TRUE
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/deps/googletest
 )
 
 FetchContent_Declare(
@@ -13,7 +12,6 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/google/benchmark.git
         GIT_TAG master
         GIT_PROGRESS TRUE
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/deps/benchmark
 )
 
 FetchContent_GetProperties(googletest)

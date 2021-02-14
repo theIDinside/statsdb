@@ -16,10 +16,9 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 Set(FETCHCONTENT_QUIET FALSE)
 FetchContent_Declare(
         json
-        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent
         GIT_TAG master
         GIT_PROGRESS TRUE
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/deps/json
 )
 
 FetchContent_Declare(
@@ -27,21 +26,19 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
         GIT_TAG master
         GIT_PROGRESS TRUE
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/deps/fmt
 )
 
 FetchContent_GetProperties(json)
 if (NOT json_POPULATED)
     FetchContent_Populate(json)
+    add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
+
 FetchContent_GetProperties(fmt)
 if (NOT fmt_POPULATED)
    FetchContent_Populate(fmt)
-
+   add_subdirectory(${fmt_SOURCE_DIR} ${fmt_BINARY_DIR})
 endif ()
-
-add_subdirectory(${fmt_SOURCE_DIR} ${fmt_BINARY_DIR})
-add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 
 add_library(statsdb
         src/game_data.cpp
