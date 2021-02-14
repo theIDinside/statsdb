@@ -22,12 +22,14 @@
         println("You passed the wrong team name to this game: {}. Teams playing: {} vs {}", team, game.game_info.away, game.game_info.home); \
         exit(-1);
 #else
-#define VERSUS_ASSERT_SWITCH(team, game) \
-    switch (game.game_info.venue(team))
+#define TEAM_ASSERTION(team, game)
 
-#define ON_ERR_EXIT                                                                                                                                    \
-    Versus::Err : println("You passed the wrong team name to this game: {}. Teams playing: {} vs {}", team, game.game_info.away, game.game_info.home); \
-    exit(-1);
+#define VERSUS_ASSERT_SWITCH(team, game) switch (game.game_info.venue(team))
+
+#define ON_ERR_EXIT                                                                                                                          \
+    case Versus::Err:                                                                                                                        \
+        println("You passed the wrong team name to this game: {}. Teams playing: {} vs {}", team, game.game_info.away, game.game_info.home); \
+        exit(-1);
 #endif
 
 namespace total {
