@@ -492,7 +492,8 @@ int main(int argc, const char **argv) {
     std::cout << "assets root dir set at: "
               << "./assets" << std::endl;
     auto db = Database::create("assets");
-    test_count_empty_net_goals(*db);
     verify_toronto_team_standings(*db);
+
+    test_count_empty_net_goals(*db);
 }
 
