@@ -5,8 +5,7 @@
 #pragma once
 #include <nlohmann/json.hpp>
 #include "../include/statsdb/game_data.hpp"
-#include <filesystem>
-#include <optional>
+
 
 namespace fs = std::filesystem;
 

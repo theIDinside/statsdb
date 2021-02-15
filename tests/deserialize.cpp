@@ -7,8 +7,6 @@
 #include <numeric>
 #include <statsdb/stats.hpp>
 #include <statsdb/statsdb.h>
-#include <tuple>
-
 
 struct StandingStats {
     CalendarDate date;

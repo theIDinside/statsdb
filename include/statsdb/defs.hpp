@@ -4,7 +4,6 @@
 
 #pragma once
 #include <cstdint>
-#include <array>
 #include <fmt/core.h>
 
 using u8    = std::uint8_t;

@@ -1,5 +1,5 @@
 #include "../include/statsdb/game_data.hpp"
-#include <algorithm>
+
 bool operator==(const Team& lhs, const Team& rhs) {
     return lhs.id == rhs.id;
 }

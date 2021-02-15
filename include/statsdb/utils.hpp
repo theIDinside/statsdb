@@ -4,11 +4,6 @@
 
 #pragma once
 #include <cassert>
-#include <numeric>
-#include <ranges>
-#include <span>
-#include <vector>
-
 
 namespace utils {
     template<typename T>
@@ -87,7 +82,11 @@ namespace utils {
     template<typename C, typename AccFn>
     auto accumulate(C c, AccFn fn) {
         using T = typename C::reference;
-        return std::accumulate(c.begin(), c.end(), T{}, fn);
+        if constexpr(std::is_integral_v<typename std::decay<T>::type>) {
+            return std::accumulate(c.begin(), c.end(), static_cast<float>(T{}), fn);
+        } else {
+            return std::accumulate(c.begin(), c.end(), T{}, fn);
+        }
     }
     /// Calculates the rolling span average, of a span of window_size, across the elements in c
     template<typename Number, IterableContainer C, typename AccFn>

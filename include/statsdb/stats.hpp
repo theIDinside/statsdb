@@ -3,48 +3,18 @@
 //
 
 #include "game_data.hpp"
-#include <string_view>
-#include <vector>
-#include <span>
+#include "decimal_number.hpp"
 
 using Games = const std::vector<Game> &;
 using GamesMut = std::vector<Game> &;
-
-/// The wonderful magic of constexpr. pow_10<3> compiles into: "mov eax, 1000" which is exactly what we want
-template<int Exponent>
-constexpr auto pow_10() {
-    auto r = 1;
-    for (auto i = 0; i < Exponent; i++) r *= 10;
-    return r;
-}
-
-/// Utility class. Templated on the amount of decimal points / what accuracy the number is. can implicitly be converted to/from floats
-/// So DecimalNumber<2> num = 0.547f -> 0.55 and DecimalNumber<1> num = 0.547 -> 0.5
-template<int DecimalPoints>
-struct RoundedDecimalNumber {
-    constexpr RoundedDecimalNumber() : value_{0.0f} {}
-    constexpr RoundedDecimalNumber(float f) {
-        float pow = pow_10<DecimalPoints>();
-        float tmp = std::round(f * pow);
-        value_ = float(tmp) / pow;
-    }
-    constexpr operator float() { return value_; }
-    constexpr float value() { return value_; }
-    float value_;
-};
-
 
 template<typename T>
 struct StatPerPeriod {
     T period[3];
 };
 // Typedefs/using aliases, which facilitates refactoring much cleaner and easier
-using Number = RoundedDecimalNumber<2>;
-using StandardResult = RoundedDecimalNumber<2>;
 using PeriodsResult = StatPerPeriod<Number>;
-using RollingStandard = std::vector<Number>;
 using RollingPeriod = std::vector<PeriodsResult>;
-
 
 struct Attempts {
     int total{0};

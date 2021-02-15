@@ -141,7 +141,7 @@ namespace span_avg {
             return res;
         });
         return utils::window_average<RoundedDecimalNumber<2>>(goals, static_cast<std::size_t>(span), [](float acc, int goalsPerGame) {
-            return acc + float(goalsPerGame);
+            return acc + static_cast<float>(goalsPerGame);
         });
     }
 
@@ -286,16 +286,11 @@ namespace span_avg::period {
         auto filter_goals = [team](const auto goal) {
           return goal.scoring_team == team;
         };
-
-
         for(auto goals_per_game : games | std::views::transform([](const auto& game) { return game.goals; })) {
             for(const auto& goal : goals_per_game | std::views::filter(filter_goals)) {
 
             }
         }
-
-
-
         std::transform(games.cbegin(), games.cend(), std::back_inserter(goals), [&](const Game &game) {
           TEAM_ASSERTION(team, game);
           auto res = 0;

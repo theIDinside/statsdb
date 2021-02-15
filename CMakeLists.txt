@@ -1,3 +1,4 @@
+set(CMAKE_VERBOSE_MAKEFILE ON)
 cmake_minimum_required(VERSION 3.17)
 project(statsdb LANGUAGES CXX)
 
@@ -51,12 +52,31 @@ add_library(statsdb
         include/statsdb/statsdb.h
         include/statsdb/defs.hpp
         include/statsdb/game_data.hpp
+        include/statsdb/game_info.hpp
         include/statsdb/calendar_date.hpp
+        include/statsdb/decimal_number.hpp
         include/statsdb/db.hpp
         include/statsdb/stats.hpp
         include/statsdb/utils.hpp
         include/statsdb/enumerate.hpp
         )
+
+target_precompile_headers(
+        statsdb
+        PUBLIC
+        <string>
+        <string_view>
+        <filesystem>
+        <optional>
+        <vector>
+        <algorithm>
+        <ranges>
+        <span>
+        <numeric>
+        <cassert>
+        <map>
+        <set>
+)
 
 target_link_libraries(statsdb nlohmann_json::nlohmann_json fmt)
 target_include_directories(
