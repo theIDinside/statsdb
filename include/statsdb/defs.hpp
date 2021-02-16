@@ -18,8 +18,12 @@ using i64   = std::int64_t;
 
 using usize = std::uintmax_t;
 
-template<typename... Args>
-void println(const char *fmt_string, Args... args) {
+template <typename T> concept Formattable = requires(T t) {
+        fmt::format("{}", t);
+};
+
+template<typename... Formattable>
+void println(const char *fmt_string, Formattable... args) {
     fmt::print(fmt_string, args...);
     fmt::print("\n");
     fflush(stdout);
