@@ -491,7 +491,8 @@ int main(int argc, const char **argv) {
               << "./assets" << std::endl;
     auto db = Database::create("assets");
     verify_toronto_team_standings(*db);
-
+    StandingStats s;
+    println("foobar: {}", s);
     test_count_empty_net_goals(*db);
 }
 
