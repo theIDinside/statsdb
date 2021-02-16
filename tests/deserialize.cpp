@@ -9,7 +9,7 @@
 #include <statsdb/statsdb.h>
 
 struct StandingStats {
-    CalendarDate date;
+    CalendarDate date{2021, 2, 16};
     int won{};
     int loss{};
     int ot_loss{};
@@ -26,6 +26,63 @@ struct StandingStats {
     float pk{};
     float shots_per_game{};
     float shots_against_per_game{};
+};
+
+template <>
+struct fmt::formatter<StandingStats>
+{
+    using Self = StandingStats;
+    char presentation = 'f';
+    constexpr auto parse(format_parse_context& ctx) {
+        auto it = ctx.begin();
+        auto end = ctx.end();
+        if(it != end && (*it == 'f' || *it == 'e')) presentation = *it++;
+        if(it != end && *it != '}')
+            throw format_error("invalid format");
+        return it;
+    }
+
+    template <typename FormatContext>
+    auto format(const Self& s, FormatContext& ctx) {
+        return format_to(
+                ctx.out(),
+R"(Date: {}
+Won: {}
+Lost: {}
+OT Losses: {}
+Pts: {}
+Pts per game {}
+Regulation wins: {}
+OT Wins: {}
+SO Wins: {}
+Goals for: {}
+Goals against: {}
+Goals for, game avg: {}
+Goals against, game avg: {}
+PP Efficiency: {}%
+PK Efficiency: {}%
+Shots for, game avg: {}
+Shots against, game avg: {})",
+                s.date,
+                s.won,
+                s.loss,
+                s.ot_loss,
+                s.points,
+                s.points_pct,
+                s.regular_wins,
+                s.ot_wins,
+                s.so_wins,
+                s.gf,
+                s.ga,
+                s.gf_avg,
+                s.ga_avg,
+                s.pp,
+                s.pk,
+                s.shots_per_game,
+                s.shots_against_per_game
+                );
+    }
+
 };
 
 
