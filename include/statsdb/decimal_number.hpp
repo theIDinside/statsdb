@@ -23,8 +23,9 @@ struct RoundedDecimalNumber {
         float tmp = std::round(f * pow);
         value_ = float(tmp) / pow;
     }
-    constexpr operator float() { return value_; }
-    constexpr float value() { return value_; }
+    constexpr operator float() const { return value_; }
+    constexpr float value() const { return value_; }
+private:
     float value_;
 };
 
