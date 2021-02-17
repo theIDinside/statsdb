@@ -546,10 +546,20 @@ void test_count_empty_net_goals(Database& db) {
 int main(int argc, const char **argv) {
     std::cout << "assets root dir set at: "
               << "./assets" << std::endl;
+
+
+
     auto db = Database::create("assets");
     verify_toronto_team_standings(*db);
     StandingStats s;
     println("foobar: {}", s);
     test_count_empty_net_goals(*db);
+
+    RoundedDecimalNumber<1> l{1.135f};
+    RoundedDecimalNumber<1> r{1.135f};
+
+    auto res = l + r;
+    auto res2 = l + 1.214f;
+    println("Precision of result: {}", res2);
 }
 
