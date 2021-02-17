@@ -140,5 +140,5 @@ namespace utils {
         c.begin();
         c.end();
     };
-    
+
 }// namespace utils
