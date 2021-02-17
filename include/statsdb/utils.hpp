@@ -21,7 +21,7 @@ namespace utils {
                 return {};
         }
 
-        auto unwrap_or(T&& t) {
+        auto unwrap_or(T &&t) {
             if (value)
                 return value.value();
             else
@@ -29,7 +29,7 @@ namespace utils {
         }
 
         constexpr bool has_value() const { return value.has_value(); }
-        constexpr T& get_value() { return value.value(); }
+        constexpr T &get_value() { return value.value(); }
     };
 
     using WSize = std::size_t;
@@ -82,7 +82,7 @@ namespace utils {
     template<typename C, typename AccFn>
     auto accumulate(C c, AccFn fn) {
         using T = typename C::reference;
-        if constexpr(std::is_integral_v<typename std::decay<T>::type>) {
+        if constexpr (std::is_integral_v<typename std::decay<T>::type>) {
             return std::accumulate(c.begin(), c.end(), static_cast<float>(T{}), fn);
         } else {
             return std::accumulate(c.begin(), c.end(), T{}, fn);
@@ -131,5 +131,94 @@ namespace utils {
             *out_iterator = std::move(tv);
         }
     }
+
+
+    template<typename Container>
+    concept Iterable = requires(Container c) {
+        std::begin(c);
+        std::end(c);
+        c.begin();
+        c.end();
+    };
+
+    template<Iterable It>
+    class Enumerator {
+    private:
+        It it;
+        using Iterator = decltype(it.begin());
+        using Deref = decltype(*it.begin());
+
+        std::size_t index;
+        Iterator curr;
+        const Iterator sentinel;
+
+        struct Enumerated {
+            std::size_t idx;
+            Deref ref;
+        };
+
+    public:
+        Enumerator(It iterable) noexcept : it(iterable), index(0),
+                                           curr(std::begin(iterable)),
+                                           sentinel(std::end(iterable)) {}
+
+        const Enumerator &begin() const { return *this; }
+        const Enumerator &end() const { return *this; }
+
+        bool operator!=(const Enumerator &) const { return curr != sentinel; }
+
+        void operator++() {
+            ++curr;
+            ++index;
+        }
+
+        auto operator*() const -> Enumerated { return {index, *curr}; }
+    };
+
+    template<Iterable It>
+    auto enumerate(It &&iter) {
+        return Enumerator<It>(iter);
+    }
+
+
+    template<Iterable It>
+    class Ziperator {
+    private:
+        It itA;
+        It itB;
+        using Iterator = decltype(itA.begin());
+        using Deref = decltype(*itA.begin());
+        Iterator iter_a;
+        Iterator iter_b;
+
+        Iterator iter_a_end;
+        Iterator iter_b_end;
+
+        struct Zipped {
+            Deref a;
+            Deref b;
+        };
+
+    public:
+        Ziperator(It itA, It itB) noexcept : itA(itA), itB(itB), iter_a(itA.begin()), iter_b(itB.begin()),
+                                             iter_a_end(itA.end()), iter_b_end(itB.end()) {}
+        const Ziperator &begin() const { return *this; }
+        const Ziperator &end() const { return *this; }
+
+        bool operator!=(const Ziperator &) const { return iter_a != iter_a_end && iter_b != iter_b_end; }
+
+        void operator++() {
+            ++iter_a;
+            ++iter_b;
+        }
+
+        auto operator*() const -> Zipped { return {*iter_a, *iter_b}; }
+    };
+
+    template<Iterable It>
+    auto zip(It &&iterA, It &&iterB) {
+        return Ziperator<It>(iterA, iterB);
+    }
+
 
 }// namespace utils
