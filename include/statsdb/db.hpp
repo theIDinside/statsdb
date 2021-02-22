@@ -18,9 +18,9 @@ public:
     using DBHandle = std::unique_ptr<Database>;
     static DBHandle create(const fs::path &assets_directory);
     std::optional<std::vector<GameInfo>> get_games_at(const CalendarDate &date);
-    std::optional<GameInfo> get_game_info(int game_id);
+    std::optional<GameInfo> get_game_info(u32 game_id);
 
-    std::optional<Game> get_game(int game_id);
+    std::optional<Game> get_game(u32 game_id);
     std::optional<std::vector<Game>> get_games_played_by(const std::string &teamName);
     const IDMap<Game>& get_all_games() const;
 

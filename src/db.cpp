@@ -154,14 +154,14 @@ std::optional<std::vector<GameInfo>> Database::get_games_at(const CalendarDate &
     }
     return {};
 }
-std::optional<GameInfo> Database::get_game_info(int game_id) {
+std::optional<GameInfo> Database::get_game_info(u32 game_id) {
     if (schedule.find(game_id) != schedule.end()) {
         return schedule[game_id];
     } else {
         return {};
     }
 }
-std::optional<Game> Database::get_game(int game_id) {
+std::optional<Game> Database::get_game(u32 game_id) {
     if (auto item = std::ranges::find_if(played_games, [id = game_id](auto g) { return id == g.second.game_info.game_id; }); item != std::end(played_games)) {
         return item->second;
     } else {
@@ -170,7 +170,7 @@ std::optional<Game> Database::get_game(int game_id) {
 }
 std::optional<std::vector<Game>> Database::get_games_played_by(const std::string &teamName) {
     auto search_term = teamName;
-    std::ranges::transform(search_term, search_term.begin(), [](auto ch) { return std::toupper(ch); });
+    std::ranges::transform(search_term, search_term.begin(), [](auto ch) { return static_cast<char>(std::toupper(ch)); });
     auto team_search = std::find_if(teams.cbegin(), teams.cend(), [&](const auto &iter) {
         const auto &team = iter.second;
         if (team == search_term) {
@@ -192,7 +192,8 @@ std::optional<std::vector<Game>> Database::get_games_played_by(const std::string
         });
         return games;
     } else {
-        return {};
+        println("NO TEAM FOUND BY NAME: {}", teamName);
+        std::abort();
     }
 }
 const IDMap<Game> &Database::get_all_games() const{
