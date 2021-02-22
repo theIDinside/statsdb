@@ -27,6 +27,13 @@ FetchContent_Declare(
         GIT_PROGRESS TRUE
 )
 
+FetchContent_Declare(
+        cxutils
+        GIT_REPOSITORY https://github.com/theIDinside/cxutils.git
+        GIT_TAG master
+        GIT_PROGRESS TRUE
+)
+
 FetchContent_GetProperties(json)
 if (NOT json_POPULATED)
     FetchContent_Populate(json)
@@ -37,6 +44,12 @@ FetchContent_GetProperties(fmt)
 if (NOT fmt_POPULATED)
    FetchContent_Populate(fmt)
    add_subdirectory(${fmt_SOURCE_DIR} ${fmt_BINARY_DIR})
+endif ()
+
+FetchContent_GetProperties(cxutils)
+if (NOT cxutils_POPULATED)
+    FetchContent_Populate(cxutils)
+    add_subdirectory(${cxutils_SOURCE_DIR} ${cxutils_BINARY_DIR})
 endif ()
 
 add_library(statsdb
@@ -76,7 +89,7 @@ target_precompile_headers(
         <set>
 )
 
-target_link_libraries(statsdb nlohmann_json::nlohmann_json fmt)
+target_link_libraries(statsdb nlohmann_json::nlohmann_json fmt cxutils)
 target_include_directories(
         statsdb
         INTERFACE
