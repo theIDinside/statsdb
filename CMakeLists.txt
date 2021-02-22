@@ -1,8 +1,6 @@
-set(CMAKE_VERBOSE_MAKEFILE ON)
 cmake_minimum_required(VERSION 3.17)
 project(statsdb LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/statsdb_bin)
 set(STATSDB_LIB_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -85,6 +83,31 @@ target_include_directories(
         $<BUILD_INTERFACE:${STATSDB_LIB_INCLUDE_DIR}>
         $<INSTALL_INTERFACE:include>
 )
+
+target_compile_features(statsdb PUBLIC cxx_std_20)
+set_target_properties(statsdb PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED TRUE
+        CXX_EXTENSIONS FALSE
+)
+
+# flags taken from; https://github.com/lefticus/cppbestpractices/blob/master/02-Use_the_Tools_Available.md
+set(CLANG_FLAGS -Wall -Wextra -Wshadow -Wnon-virtual-dtor -pedantic -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wconversion -Wsign-conversion -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op
+        -Wnull-dereference -Wuseless-cast -Wdouble-promotion -Wformat=2 -Wlifetime)
+
+set(GCC_FLAGS ${CLANG_FLAGS})
+set(MSVC_FLAGS /W4 /w14242 /w14254 /w14263 /w14265 /w14287 /we4289 /w14296 /w14311 /w14545 /w14546 /w14547 /w14549 /w14555 /w14619 /w14640 /w14826 /w14905 /w14906 /w14928)
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    message("You are using CLANG. Setting CLANG flags: ${CLANG_FLAGS}")
+    target_compile_options(statsdb PUBLIC ${CLANG_FLAGS})
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    message("You are using GCC. Setting GCC flags: ${GCC_FLAGS}")
+    target_compile_options(statsdb PUBLIC ${GCC_FLAGS})
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    message("You are using MSVC. Setting MSVC flags: ${MSVC_FLAGS}")
+    target_compile_options(statsdb PUBLIC ${MSVC_FLAGS})
+endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     message("Debug build set")
