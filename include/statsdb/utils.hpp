@@ -95,9 +95,9 @@ namespace utils {
         std::vector<Number> results;
         std::span season_span{container};
         for (std::size_t offset = 0;; ++offset) {
-            auto game_span = slide(season_span, offset, window_size);
+            const auto game_span = slide(season_span, offset, window_size);
             if (game_span.empty()) break;
-            float value = accumulate(game_span, fn);
+            const float value = accumulate(game_span, fn);
             Number res = float(value / window_size);
             results.push_back(res);
         }
