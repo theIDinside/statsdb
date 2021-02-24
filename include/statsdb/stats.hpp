@@ -21,17 +21,23 @@ struct Attempts {
     int results{0};
 };
 
+
+
 namespace total {
     /// Returns games where opponents pulled goalie, and where team scored in empty net
     /// Note that these stats do _not_ take into account, when the team is 5v4, and the opposing team pull goalie
     /// to be 5v5, for reasons related (currently) to scraping complexity
 
     // outcomes_against_division is() irrelevant under Corona pandemic. The damn teams only play against same division opponents
-    Attempts empty_net_goals(std::string_view team, Games games);          // TODO: write test
-    Attempts empty_net_letups(std::string_view team, Games games);         // TODO: write test
+    Attempts games_with_empty_net_goal(std::string_view team, Games games);          // TODO: write test
+    Attempts games_with_empty_net_letup(std::string_view team, Games games);         // TODO: write test
     Attempts outcomes_against_division(std::string_view team, Games games);// TODO: implement, write test
     Attempts games_with_pp_goals(std::string_view team, Games games);      // TODO: write test
     Attempts games_with_pk_letups(std::string_view team, Games games);     // TODO: write test
+
+    /// Pre-condition: games passed to this function, must be games won by team, otherwise result will be wrong
+    StatsAverage win_condition_averages(std::string_view team, Games won_games);
+
 }// namespace total
 
 /// Where we ask questions like "What has happenened in prior games at time T, with standing S"
@@ -48,7 +54,7 @@ namespace live {
 }// namespace live
 
 /// Pre-condition of all functions: games.size() >= span. Assertion in debug, in release mode, you're screwed if you don't make sure of this.
-namespace span_avg {
+namespace trend {
 
     namespace period {
         RollingPeriod goals_for(std::string_view team, Games games, int span);
@@ -57,21 +63,23 @@ namespace span_avg {
         RollingPeriod shots_against(std::string_view team, Games games, int span);// TODO: write test
     }
 
-    RollingStandard goals_for(std::string_view team, Games games, int span);
-    RollingStandard goals_against(std::string_view team, Games games, int span);
-    RollingStandard shots_for(std::string_view team, Games games, int span);    // TODO: write test
-    RollingStandard shots_against(std::string_view team, Games games, int span);// TODO: write test
+    RollingStandard goals_for(std::string_view team, Games games, size_t span);
+    RollingStandard goals_against(std::string_view team, Games games, usize span);
+    RollingStandard shots_for(std::string_view team, Games games, usize span);    // TODO: write test
+    RollingStandard shots_against(std::string_view team, Games games, usize span);// TODO: write test
 
 
 
-    RollingStandard power_play(std::string_view team, Games games, int span);
-    RollingStandard penalty_kill(std::string_view team, Games games, int span);
+    RollingStandard power_play(std::string_view team, Games games, usize span);
+    RollingStandard penalty_kill(std::string_view team, Games games, usize span);
     RollingStandard times_in_pk(std::string_view team, const std::vector<Game> &attemptsPerGame, int span);// TODO: write test
-    RollingStandard times_in_pp(std::string_view team, Games games, int span);                             // TODO: write test
+    RollingStandard times_in_pp(std::string_view team, Games games, usize span);                             // TODO: write test
 
     RollingPeriod period_goals_for(std::string_view team, Games games, int span);    // TODO: implement, write test
     RollingPeriod period_goals_against(std::string_view team, Games games, int span);// TODO: implement, write test
 
     RollingStandard games_with_pp_goals(std::string_view team, Games games, int span); // TODO: implement, write test
     RollingStandard games_with_pk_letups(std::string_view team, Games games, int span);// TODO: implement, write test
+
+    RollingStandard overtime_games_percentage(Games games, int span);
 }// namespace span_avg
