@@ -1,5 +1,7 @@
 # In-memory database for the scraped data for HSV
 
+This is purely a document/mental model for me. Says absolutely nothing useful to anyone else.
+
 ## Dependencies
 Uses fmtlib & nlohmannjson (there are faster libraries... I know).
 
