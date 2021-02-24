@@ -37,11 +37,9 @@ struct RoundedDecimalNumber {
         float tmp = std::round(value_ * pow);
         return float(tmp) / pow;
     }
-    static constexpr auto precision() { return PRECISION; }
 
-private:
-    float value_;
-    static constexpr int PRECISION = DecimalPoints;
+    constexpr auto as_percent() const { return value() * 100.0f; }
+    static constexpr auto precision() { return PRECISION; }
 
 
     template<int DPL, int DPR>
@@ -56,6 +54,10 @@ private:
     friend constexpr auto operator+(float, RoundedDecimalNumber<DP>);
     template<int DP>
     friend constexpr auto operator-(float, RoundedDecimalNumber<DP>);
+
+private:
+    float value_;
+    static constexpr int PRECISION = DecimalPoints;
 };
 
 template<int DPL, int DPR>
