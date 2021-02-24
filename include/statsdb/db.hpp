@@ -22,7 +22,7 @@ public:
 
     std::optional<Game> get_game(u32 game_id);
     std::optional<std::vector<Game>> get_games_played_by(const std::string &teamName);
-    const IDMap<Game>& get_all_games() const;
+    const IDMap<Game>&get_all_played_games() const;
 
 private:
     IDMap<Team> teams;

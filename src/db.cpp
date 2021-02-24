@@ -196,6 +196,6 @@ std::optional<std::vector<Game>> Database::get_games_played_by(const std::string
         std::abort();
     }
 }
-const IDMap<Game> &Database::get_all_games() const{
+const IDMap<Game> &Database::get_all_played_games() const{
     return played_games;
 }
