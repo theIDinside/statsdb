@@ -6,15 +6,21 @@
 #pragma once
 // local depedencies
 #include "calendar_date.hpp"
+#include "decimal_number.hpp"
 #include "game_info.hpp"
 
 // system headers
+#include <chrono>
 #include <fmt/format.h>
 
 template<typename T>
 struct TeamsValueHolder {
-    T home;
-    T away;
+    T home{};
+    T away{};
+
+    TeamsValueHolder difference(const TeamsValueHolder &other) {
+        return TeamsValueHolder{home - other.home, away - other.away};
+    }
 };
 
 struct Team {
@@ -60,7 +66,7 @@ struct Goal {
     std::string scoring_player;
 };
 
-bool empty_net_goal(const Goal& g);
+bool empty_net_goal(const Goal &g);
 
 struct SpecialTeams {
     enum class Type {
@@ -70,14 +76,31 @@ struct SpecialTeams {
     int goals;
     int attempts;
     // clang-format off
-    [[nodiscard]]
-    float get_efficiency(Type type) const;
-    // clang-format on
+
+    template<NumberFormat format = NumberFormat::Value>
+    [[nodiscard]] inline constexpr float get_efficiency(Type type) const {
+        if constexpr (format == NumberFormat::Percent) {
+            if(type == Type::PowerPlay) {
+                return float(goals) / float(attempts) * 100.0f;
+            } else if(type == Type::PenaltyKilling) {
+                return (1.0f - float(goals) / float(attempts)) * 100.0f;
+            }
+        } else {
+            if(type == Type::PowerPlay) {
+                return float(goals) / float(attempts);
+            } else if(type == Type::PenaltyKilling) {
+                return 1.0f - float(goals) / float(attempts);
+            }
+        }
+    }
+
+    friend SpecialTeams operator+(const SpecialTeams& left, const SpecialTeams& right);
 };
 
 using IntResult = TeamsValueHolder<int>;
 using FloatResult = TeamsValueHolder<float>;
 using PowerPlay = TeamsValueHolder<SpecialTeams>;
+
 
 struct Game {
     GameInfo game_info;
@@ -95,4 +118,45 @@ struct Game {
     bool goalie_probably_pulled;
 };
 
-SpecialTeams get_special_teams(const Game& game, std::string_view team, SpecialTeams::Type type);
+struct StatsAverage {
+    FloatResult goals{};
+    FloatResult shots{};
+    FloatResult pp_efficiency{};
+    FloatResult pk_efficiency{};
+    FloatResult pp{};
+    FloatResult pk{};
+    FloatResult pim{};
+    FloatResult hits{};
+    FloatResult face_off{};
+    FloatResult blocked_shots{};
+    FloatResult give_aways{};
+    FloatResult take_aways{};
+    void add_game(const Game &g, bool isHomeTeam);
+    friend StatsAverage operator/(const StatsAverage &acc, float divisor);
+    void print() const;
+    StatsAverage difference(const StatsAverage &other);
+};
+
+struct GameStatsAccumulator {
+    int games_accumulated = 0;
+    float goals{};
+    float shots{};
+    SpecialTeams pp{};
+    SpecialTeams pk{};
+    float pim{};
+    float hits{};
+    float face_off{};
+    float blocked_shots{};
+    float give_aways{};
+    float take_aways{};
+    void add_game(const Game &g, bool isHomeTeam);
+    friend GameStatsAccumulator operator/(const GameStatsAccumulator &acc, float divisor);
+};
+
+struct AverageInfo {
+    std::string team_name;
+    GameStatsAccumulator data;
+};
+
+void print_comparison(const AverageInfo& home, const AverageInfo& away);
+SpecialTeams get_special_teams(const Game &game, std::string_view team, SpecialTeams::Type type);
