@@ -59,7 +59,7 @@ std::vector<Game> deserialize_games(const fs::path &games_file) {
     }
 }
 
-Database::DBHandle Database::create(const fs::path &assets_directory) {
+Database::DBHandle Database::create_and_setup(const fs::path &assets_directory) {
     if (fs::exists(assets_directory)) {
         auto teams_data = deserialize_teams(assets_directory / "db" / "teams.db");
         auto game_infos_data = deserialize_game_infos(assets_directory / "db" / "gameinfo.db");
@@ -70,21 +70,74 @@ Database::DBHandle Database::create(const fs::path &assets_directory) {
         }
 
         std::map<int, Team> teams{};
-        std::map<int, GameInfo> gameInfos{};
-        std::map<int, Game> gameResults{};
+        std::map<int, GameInfo> schedule{};
+        std::map<int, Game> played_games{};
 
         for (const auto &t : teams_data) {
             teams.emplace(t.id, t);
         }
 
         for (const auto &gi : game_infos_data) {
-            gameInfos.emplace(gi.game_id, gi);
+            schedule.emplace(gi.game_id, gi);
         }
 
         for (const auto &gr : games_data) {
-            gameResults.emplace(gr.game_info.game_id, gr);
+            played_games.emplace(gr.game_info.game_id, gr);
         }
-        return std::make_unique<Database>(std::move(teams), std::move(gameInfos), std::move(gameResults));
+
+        Schedule calendar;                                   // <'a>
+        std::map<Team, std::set<const Game *>> games_by_team;// <'a>
+
+        // Init
+        for (const auto &[id, game_info] : schedule) {
+            auto it = std::find_if(calendar.begin(), calendar.end(), [date = game_info.date](const auto &it) {
+              return it.first == date;
+            });
+            if (it != calendar.end()) {
+                calendar[game_info.date].insert(game_info.game_id);
+            } else {
+                std::set<int> new_set{};
+                new_set.insert(game_info.game_id);
+                calendar.emplace(game_info.date, std::move(new_set));
+            }
+        }
+
+
+        // Not a code smell. We are creating a map of references to dat<a we own. Must therefore be done here.
+        for (const auto &[game_id, game_result] : played_games) {
+            const auto &home_team = game_result.game_info.home;
+            const auto &away_team = game_result.game_info.away;
+            auto home_search = std::find_if(teams.cbegin(), teams.cend(), [&](const auto &iter) {
+              const auto &team = iter.second;
+              if (team == home_team) {
+                  return true;
+              }
+              return false;
+            });
+            auto away_search = std::find_if(teams.cbegin(), teams.cend(), [&](const auto &iter) {
+              const auto &team = iter.second;
+              if (team == away_team) {
+                  return true;
+              }
+              return false;
+            });
+
+            if (home_search != teams.end() && away_search != teams.end()) {
+                auto ht = home_search->second;
+                auto at = away_search->second;
+                games_by_team[ht].insert(&game_result);
+                games_by_team[at].insert(&game_result);
+            } else {
+                println("failed to initialize DB.");
+                std::abort();
+            }
+        }
+        for (auto &t : games_by_team) {
+            println("{} has played {} games", t.first.name, t.second.size());
+        }
+
+
+        return std::make_unique<Database>(std::move(teams), std::move(schedule), std::move(played_games), std::move(calendar), std::move(games_by_team));
 
     } else {
 
@@ -92,63 +145,16 @@ Database::DBHandle Database::create(const fs::path &assets_directory) {
         std::abort();
     }
 }
-Database::Database(IDMap<Team> &&team, IDMap<GameInfo> &&schedule, IDMap<Game> &&games_played) noexcept : teams(std::move(team)), schedule(std::move(schedule)), played_games(std::move(games_played)), calendar{}, games_by_team{} {
-    init();
+Database::Database(IDMap<Team> &&team, IDMap<GameInfo> &&schedule, IDMap<Game> &&games_played, Schedule&& calendar, TeamGamesMap&& games_by_team) noexcept : teams(std::move(team)), schedule(std::move(schedule)), played_games(std::move(games_played)), calendar{std::move(calendar)}, games_by_team{std::move(games_by_team)} {
+
 }
-void Database::init() {
-    for (const auto &[id, game_info] : schedule) {
-        auto it = std::find_if(calendar.begin(), calendar.end(), [date = game_info.date](const auto &it) {
-            return it.first == date;
-        });
-        if (it != calendar.end()) {
-            calendar[game_info.date].insert(game_info.game_id);
-        } else {
-            std::set<int> new_set{};
-            new_set.insert(game_info.game_id);
-            calendar.emplace(game_info.date, std::move(new_set));
-        }
-    }
 
-
-    // Not a code smell. We are creating a map of references to dat<a we own. Must therefore be done here.
-    for (const auto &[game_id, game_result] : played_games) {
-        const auto &home_team = game_result.game_info.home;
-        const auto &away_team = game_result.game_info.away;
-        auto home_search = std::find_if(teams.cbegin(), teams.cend(), [&](const auto &iter) {
-            const auto &team = iter.second;
-            if (team == home_team) {
-                return true;
-            }
-            return false;
-        });
-        auto away_search = std::find_if(teams.cbegin(), teams.cend(), [&](const auto &iter) {
-            const auto &team = iter.second;
-            if (team == away_team) {
-                return true;
-            }
-            return false;
-        });
-
-        if (home_search != teams.end() && away_search != teams.end()) {
-            auto ht = home_search->second;
-            auto at = away_search->second;
-            games_by_team[ht].insert(&game_result);
-            games_by_team[at].insert(&game_result);
-        } else {
-            println("failed to initialize DB.");
-            std::abort();
-        }
-    }
-    for (auto &t : games_by_team) {
-        println("{} has played {} games", t.first.name, t.second.size());
-    }
-}
 std::optional<std::vector<GameInfo>> Database::get_games_at(const CalendarDate &date) {
     if (calendar.find(date) != calendar.end()) {
-        auto game_ids = calendar[date];
+        auto game_ids = calendar.at(date);
         std::vector<GameInfo> games;
         std::transform(game_ids.cbegin(), game_ids.cend(), std::back_inserter(games), [&](const auto &id) {
-            return schedule[id];
+            return schedule.at(id);
         });
         return games;
     }
@@ -156,7 +162,7 @@ std::optional<std::vector<GameInfo>> Database::get_games_at(const CalendarDate &
 }
 std::optional<GameInfo> Database::get_game_info(u32 game_id) {
     if (schedule.find(game_id) != schedule.end()) {
-        return schedule[game_id];
+        return schedule.at(game_id);
     } else {
         return {};
     }
@@ -183,7 +189,7 @@ std::optional<std::vector<Game>> Database::get_games_played_by(const std::string
         // regular season, tend to be max 81 games
         games.reserve(81);
         auto team_name = team_search->second;
-        auto games_refs = games_by_team[team_name];
+        auto games_refs = games_by_team.at(team_name);
         std::ranges::transform(games_refs, std::back_inserter(games), [](auto el) {
             return *el;
         });

@@ -11,26 +11,25 @@ namespace fs = std::filesystem;
 template<typename T>
 using IDMap = std::map<int, T>;
 using Schedule = std::map<CalendarDate, std::set<int>>;
+using TeamGamesMap = std::map<Team, std::set<const Game *>>;
 
 class Database { /* <'a> */
 public:
-    Database(IDMap<Team> &&team, IDMap<GameInfo> &&schedule, IDMap<Game> &&games_played) noexcept;
+    Database(IDMap<Team> &&team, IDMap<GameInfo> &&schedule, IDMap<Game> &&games_played, Schedule&& calendar, TeamGamesMap&& games_by_team) noexcept;
     using DBHandle = std::unique_ptr<Database>;
-    static DBHandle create(const fs::path &assets_directory);
+    static DBHandle create_and_setup(const fs::path &assets_directory);
     std::optional<std::vector<GameInfo>> get_games_at(const CalendarDate &date);
     std::optional<GameInfo> get_game_info(u32 game_id);
 
     std::optional<Game> get_game(u32 game_id);
     std::optional<std::vector<Game>> get_games_played_by(const std::string &teamName);
-    const IDMap<Game>&get_all_played_games() const;
+    [[nodiscard]] const IDMap<Game>& get_all_played_games() const;
 
 private:
-    IDMap<Team> teams;
-    IDMap<GameInfo> schedule;
-    IDMap<Game> played_games;
-
-    /// Initializes relative data (calendar, and games_by_team, two members which hold references to data inside this class, so are bounded by it's lifetime 'a
-    void init();
-    Schedule calendar;                                   // <'a>
-    std::map<Team, std::set<const Game *>> games_by_team;// <'a>
+    const IDMap<Team> teams;
+    const IDMap<GameInfo> schedule;
+    const IDMap<Game> played_games;
+    /// Data that refers to other data, within this object
+    const Schedule calendar;                                   // <'a>
+    const TeamGamesMap games_by_team;// <'a>
 };
