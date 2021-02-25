@@ -600,7 +600,7 @@ void calculate_games_reaching_OT(Database& db) {
 }
 
 int main(int argc, const char **argv) {
-    auto db = Database::create("assets");
+    auto db = Database::create_and_setup("assets");
     // verify_toronto_team_standings(*db);
     // test_win_condition_average(*db);
     calculate_games_reaching_OT(*db);
