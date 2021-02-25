@@ -63,7 +63,7 @@ namespace trend {
         RollingPeriod shots_against(std::string_view team, Games games, int span);// TODO: write test
     }
 
-    RollingStandard goals_for(std::string_view team, Games games, size_t span);
+    RollingStandard goals_for(std::string_view team, Games games, usize span);
     RollingStandard goals_against(std::string_view team, Games games, usize span);
     RollingStandard shots_for(std::string_view team, Games games, usize span);    // TODO: write test
     RollingStandard shots_against(std::string_view team, Games games, usize span);// TODO: write test
@@ -72,14 +72,11 @@ namespace trend {
 
     RollingStandard power_play(std::string_view team, Games games, usize span);
     RollingStandard penalty_kill(std::string_view team, Games games, usize span);
-    RollingStandard times_in_pk(std::string_view team, const std::vector<Game> &attemptsPerGame, int span);// TODO: write test
+    RollingStandard times_in_pk(std::string_view team, const std::vector<Game> &attemptsPerGame, usize span);// TODO: write test
     RollingStandard times_in_pp(std::string_view team, Games games, usize span);                             // TODO: write test
 
-    RollingPeriod period_goals_for(std::string_view team, Games games, int span);    // TODO: implement, write test
-    RollingPeriod period_goals_against(std::string_view team, Games games, int span);// TODO: implement, write test
+    RollingStandard games_with_pp_goals(std::string_view team, Games games, usize span); // TODO: implement, write test
+    RollingStandard games_with_pk_letups(std::string_view team, Games games, usize span);// TODO: implement, write test
 
-    RollingStandard games_with_pp_goals(std::string_view team, Games games, int span); // TODO: implement, write test
-    RollingStandard games_with_pk_letups(std::string_view team, Games games, int span);// TODO: implement, write test
-
-    RollingStandard overtime_games_percentage(Games games, int span);
+    RollingStandard overtime_games_percentage(Games games, usize span);
 }// namespace span_avg

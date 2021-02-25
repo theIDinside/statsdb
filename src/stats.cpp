@@ -207,7 +207,7 @@ namespace trend {
             return acc + float(shotsPerGame);
         });
     }
-    RollingStandard times_in_pk(const std::string_view team, Games games, int span) {
+    RollingStandard times_in_pk(std::string_view team, Games games, usize span) {
         assert(games.size() >= span);
         std::vector<int> times_shorthanded;
         times_shorthanded.reserve(games.size());
@@ -301,7 +301,7 @@ namespace trend {
         return result;
     }
 
-    RollingStandard overtime_games_percentage(const std::vector<Game> &games, int span) {
+    RollingStandard overtime_games_percentage(const std::vector<Game> &games, usize span) {
         RollingStandard res{};
         res.reserve(games.size());
         std::vector<int> games_reaching_overtime{};
@@ -372,13 +372,13 @@ namespace trend {
               return acc + float(goalsPerGamePerPeriod);
             };
 
-            auto p1_avgs = utils::window_average<RoundedDecimalNumber<2>>(goals_p1, static_cast<std::size_t>(span), +fn);
-            auto p2_avgs = utils::window_average<RoundedDecimalNumber<2>>(goals_p2, static_cast<std::size_t>(span), +fn);
-            auto p3_avgs = utils::window_average<RoundedDecimalNumber<2>>(goals_p3, static_cast<std::size_t>(span), +fn);
+            const auto p1_avgs = utils::window_average<RoundedDecimalNumber<2>>(goals_p1, static_cast<std::size_t>(span), +fn);
+            const auto p2_avgs = utils::window_average<RoundedDecimalNumber<2>>(goals_p2, static_cast<std::size_t>(span), +fn);
+            const auto p3_avgs = utils::window_average<RoundedDecimalNumber<2>>(goals_p3, static_cast<std::size_t>(span), +fn);
 
             RollingPeriod results;
             results.reserve(games.size());
-            for(auto [p1, p2, p3] : cxutils::zip_three(p1_avgs, p2_avgs, p3_avgs)) {
+            for(const auto [p1, p2, p3] : cxutils::zip_three(p1_avgs, p2_avgs, p3_avgs)) {
                 results.emplace_back(PeriodsResult{.period = {p1, p2, p3}});
             }
             return results;
